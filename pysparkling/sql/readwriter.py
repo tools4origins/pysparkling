@@ -1,10 +1,10 @@
 import sys
-from pysparkling import RDD
-from pysparkling.sql.dataframe import DataFrame
-from pysparkling.sql.internal_utils.readers import InternalReader
-from pysparkling.sql.internal_utils.readwrite import OptionUtils
-from pysparkling.sql.internal_utils.writers import CSVWriter, JSONWriter, InternalWriter
-from pysparkling.sql.utils import IllegalArgumentException
+from .. import RDD
+from .dataframe import DataFrame
+from .internal_utils.readers import InternalReader
+from .internal_utils.readwrite import OptionUtils
+from .internal_utils.writers import CSVWriter, JSONWriter, InternalWriter
+from .utils import IllegalArgumentException
 
 WRITE_MODES = ("overwrite", "append", "ignore", "error", "errorifexists")
 DATA_WRITERS = dict(

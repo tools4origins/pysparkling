@@ -1,35 +1,35 @@
 import math
 
-from pysparkling.sql.column import Column, parse
-from pysparkling.sql.expressions.aggregate.collectors import SumDistinct, Last, First, \
+from .column import Column, parse
+from .expressions.aggregate.collectors import SumDistinct, Last, First, \
     CountDistinct, CollectSet, CollectList, ApproxCountDistinct
-from pysparkling.sql.expressions.aggregate.covariance_aggregations import CovarSamp, CovarPop, Corr
-from pysparkling.sql.expressions.aggregate.stat_aggregations import VarPop, VarSamp, Sum, \
+from .expressions.aggregate.covariance_aggregations import CovarSamp, CovarPop, Corr
+from .expressions.aggregate.stat_aggregations import VarPop, VarSamp, Sum, \
     StddevPop, StddevSamp, Skewness, Min, Avg, Max, Kurtosis, Count
-from pysparkling.sql.expressions.arrays import ArraysZip, ArrayRepeat, Flatten, ArrayMax, \
+from .expressions.arrays import ArraysZip, ArrayRepeat, Flatten, ArrayMax, \
     ArrayMin, SortArray, Size, ArrayExcept, ArrayUnion, ArrayIntersect, ArrayDistinct, \
     ArrayRemove, ArraySort, ElementAt, ArrayPosition, ArrayJoin, ArraysOverlap, ArrayContains, \
     MapFromArraysColumn, MapColumn, ArrayColumn, Sequence, Slice
-from pysparkling.sql.expressions.dates import ToUTCTimestamp, FromUTCTimestamp, TruncTimestamp, \
+from .expressions.dates import ToUTCTimestamp, FromUTCTimestamp, TruncTimestamp, \
     TruncDate, ParseToDate, ParseToTimestamp, UnixTimestamp, CurrentTimestamp, FromUnixTime, \
     WeekOfYear, NextDay, MonthsBetween, LastDay, DayOfYear, DayOfMonth, DayOfWeek, Month, Quarter, \
     Year, DateDiff, DateSub, DateAdd, DateFormat, CurrentDate, AddMonths, Hour, Minute, Second
-from pysparkling.sql.expressions.explodes import PosExplodeOuter, PosExplode, ExplodeOuter, Explode
-from pysparkling.sql.expressions.jsons import StructsToJson
-from pysparkling.sql.expressions.literals import Literal
-from pysparkling.sql.expressions.mappers import MapConcat, MapFromEntries, MapEntries, MapValues, \
+from .expressions.explodes import PosExplodeOuter, PosExplode, ExplodeOuter, Explode
+from .expressions.jsons import StructsToJson
+from .expressions.literals import Literal
+from .expressions.mappers import MapConcat, MapFromEntries, MapEntries, MapValues, \
     MapKeys, Reverse, Concat, Upper, SubstringIndex, StringSplit, UnBase64, RegExpReplace, \
     RegExpExtract, Lower, Length, FormatNumber, ConcatWs, Base64, Ascii, ToRadians, ToDegrees, \
     Tanh, Tan, Sinh, Sin, Signum, Bround, Round, Rint, Log2, Log1p, Log10, Least, Hypot, Unhex, \
     Hex, Greatest, Floor, Factorial, ExpM1, Exp, Cosh, Cos, Conv, Ceil, Cbrt, Bin, Atan2, Atan, \
     Asin, Acos, Abs, CaseWhen, CreateStruct, Sqrt, SparkPartitionID, Randn, Rand, NaNvl, \
     MonotonicallyIncreasingID, IsNaN, Coalesce, GroupingID, Grouping, Log
-from pysparkling.sql.expressions.operators import IsNull, BitwiseNot, Pow, Pmod, Substring
-from pysparkling.sql.expressions.strings import StringTrim, StringTranslate, StringRTrim, \
+from .expressions.operators import IsNull, BitwiseNot, Pow, Pmod, Substring
+from .expressions.strings import StringTrim, StringTranslate, StringRTrim, \
     StringRepeat, StringRPad, StringLTrim, StringLPad, StringLocate, Levenshtein, StringInStr, \
     InitCap
-from pysparkling.sql.expressions.userdefined import UserDefinedFunction
-from pysparkling.sql.types import DataType
+from .expressions.userdefined import UserDefinedFunction
+from .types import DataType
 
 
 def col(colName):

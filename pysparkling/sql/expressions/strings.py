@@ -1,6 +1,6 @@
-from pysparkling.sql.expressions.expressions import Expression, UnaryExpression
-from pysparkling.sql.types import StringType
-from pysparkling.utils import levenshtein_distance
+from .expressions import Expression, UnaryExpression
+from ..types import StringType
+from ...utils import levenshtein_distance
 
 
 class StringTrim(UnaryExpression):

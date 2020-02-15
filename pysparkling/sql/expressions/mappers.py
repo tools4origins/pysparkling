@@ -4,13 +4,13 @@ import random
 import re
 import string
 
-from pysparkling.sql.types import StringType
+from ..types import StringType
 
-from pysparkling.sql.internal_utils.column import resolve_column
-from pysparkling.sql.expressions.expressions import Expression, UnaryExpression, \
+from ..internal_utils.column import resolve_column
+from ..expressions.expressions import Expression, UnaryExpression, \
     NullSafeColumnOperation
-from pysparkling.sql.utils import AnalysisException
-from pysparkling.utils import XORShiftRandom, row_from_keyed_values, \
+from ..utils import AnalysisException
+from ...utils import XORShiftRandom, row_from_keyed_values, \
     MonotonicallyIncreasingIDGenerator, half_even_round, half_up_round
 
 

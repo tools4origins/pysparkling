@@ -1,7 +1,7 @@
-from pysparkling.sql.column import Column
-from pysparkling.sql.dataframe import DataFrame
+from .column import Column
+from .dataframe import DataFrame
 # pylint: disable=W0622
-from pysparkling.sql.functions import count, mean, parse, avg, max, min, sum, lit
+from .functions import count, mean, parse, avg, max, min, sum, lit
 
 
 class GroupedData(object):

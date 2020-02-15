@@ -1,7 +1,7 @@
-from pysparkling.sql.casts import get_caster
-from pysparkling.sql.types import StructField, DataType, \
+from ..casts import get_caster
+from ..types import StructField, DataType, \
     INTERNAL_TYPE_ORDER, python_to_spark_type
-from pysparkling.sql.utils import AnalysisException
+from ..utils import AnalysisException
 
 
 class Expression(object):
@@ -58,7 +58,7 @@ class Expression(object):
     def children_merge(children, row, schema):
         # Top level import would cause cyclic dependencies
         # pylint: disable=import-outside-toplevel
-        from pysparkling.sql.column import Column
+        from ..column import Column
         for child in children:
             if isinstance(child, Expression):
                 child.recursive_merge(row, schema)
@@ -73,7 +73,7 @@ class Expression(object):
     def recursive_merge_stats(self, other, schema):
         # Top level import would cause cyclic dependencies
         # pylint: disable=import-outside-toplevel
-        from pysparkling.sql.expressions.operators import Alias
+        from .operators import Alias
         if isinstance(other.expr, Alias):
             self.recursive_merge_stats(other.expr.expr, schema)
         else:
@@ -84,7 +84,7 @@ class Expression(object):
     def children_merge_stats(children, other, schema):
         # Top level import would cause cyclic dependencies
         # pylint: disable=import-outside-toplevel
-        from pysparkling.sql.column import Column
+        from ..column import Column
         for child in children:
             if isinstance(child, Expression):
                 child.recursive_merge_stats(other, schema)
@@ -102,7 +102,7 @@ class Expression(object):
     def children_initialize(children, partition_index):
         # Top level import would cause cyclic dependencies
         # pylint: disable=import-outside-toplevel
-        from pysparkling.sql.column import Column
+        from ..column import Column
         for child in children:
             if isinstance(child, Expression):
                 child.recursive_initialize(partition_index)
@@ -123,7 +123,7 @@ class Expression(object):
     def children_pre_evaluation_schema(children, schema):
         # Top level import would cause cyclic dependencies
         # pylint: disable=import-outside-toplevel
-        from pysparkling.sql.column import Column
+        from ..column import Column
         for child in children:
             if isinstance(child, Expression):
                 child.recursive_pre_evaluation_schema(schema)

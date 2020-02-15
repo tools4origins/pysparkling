@@ -25,8 +25,8 @@ import math
 import numbers
 from collections import namedtuple
 
-from pysparkling.sql.functions import parse
-from pysparkling.utils import row_from_keyed_values
+from .sql.functions import parse
+from .utils import row_from_keyed_values
 
 try:
     from numpy import maximum, minimum, sqrt

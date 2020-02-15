@@ -1,5 +1,5 @@
-from pysparkling.sql.expressions.expressions import Expression, UnaryExpression
-from pysparkling.sql.utils import AnalysisException
+from .expressions import Expression, UnaryExpression
+from ..utils import AnalysisException
 
 
 class ArraysOverlap(Expression):

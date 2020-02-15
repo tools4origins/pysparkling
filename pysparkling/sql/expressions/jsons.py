@@ -1,8 +1,8 @@
 import json
 
-from pysparkling.sql.casts import get_time_formatter
-from pysparkling.sql.expressions.expressions import Expression
-from pysparkling.utils import get_json_encoder
+from ..casts import get_time_formatter
+from .expressions import Expression
+from ...utils import get_json_encoder
 
 
 class StructsToJson(Expression):

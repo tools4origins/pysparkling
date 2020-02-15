@@ -6,11 +6,11 @@ from functools import partial
 import pytz
 from dateutil.tz import tzlocal
 
-from pysparkling.sql.types import UserDefinedType, NumericType, _create_row, DateType, \
+from .types import UserDefinedType, NumericType, _create_row, DateType, \
     TimestampType, ArrayType, StructType, MapType, BooleanType, StringType, BinaryType, \
     FloatType, ByteType, ShortType, IntegerType, LongType, DoubleType, NullType, \
     DecimalType
-from pysparkling.sql.utils import AnalysisException
+from .utils import AnalysisException
 
 JAVA_TIME_FORMAT_TOKENS = re.compile("(([a-zA-Z])\\2*|[^a-zA-Z]+)")
 

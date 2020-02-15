@@ -11,11 +11,11 @@ from operator import itemgetter
 import pytz
 from pytz import UnknownTimeZoneError
 
-from pysparkling.sql.schema_utils import get_on_fields
-from pysparkling.sql.internal_utils.joins import FULL_JOIN, RIGHT_JOIN, LEFT_JOIN, \
+from .sql.schema_utils import get_on_fields
+from .sql.internal_utils.joins import FULL_JOIN, RIGHT_JOIN, LEFT_JOIN, \
     CROSS_JOIN, INNER_JOIN, LEFT_SEMI_JOIN, LEFT_ANTI_JOIN
-from pysparkling.sql.types import Row, _create_row
-from pysparkling.sql.utils import IllegalArgumentException
+from .sql.types import Row, _create_row
+from .sql.utils import IllegalArgumentException
 
 
 class Tokenizer(object):

@@ -1,1 +1,1 @@
-from pysparkling.sql.dataframe import DataFrame
+from .dataframe import DataFrame

@@ -1,18 +1,18 @@
 import sys
 from threading import RLock
 
-from pysparkling.sql.types import _make_type_verifier, DataType, StructType, \
-    _create_converter, _infer_schema, _has_nulltype, _merge_type
-
 import pysparkling
-from pysparkling import RDD
-from pysparkling.context import Context
-from pysparkling.sql.conf import RuntimeConfig
-from pysparkling.sql.internals import DataFrameInternal
-from pysparkling.sql.dataframe import DataFrame
-from pysparkling.sql.readwriter import DataFrameReader
-from pysparkling.sql.schema_utils import infer_schema_from_list
-from pysparkling.sql.utils import require_minimum_pandas_version
+
+from .types import _make_type_verifier, DataType, StructType, \
+    _create_converter, _infer_schema, _has_nulltype, _merge_type
+from .. import RDD
+from ..context import Context
+from .conf import RuntimeConfig
+from .internals import DataFrameInternal
+from .dataframe import DataFrame
+from .readwriter import DataFrameReader
+from .schema_utils import infer_schema_from_list
+from .utils import require_minimum_pandas_version
 
 if sys.version >= '3':
     basestring = unicode = str
@@ -43,7 +43,7 @@ class SparkSession(object):
     def __init__(self, sparkContext, jsparkSession=None):
         # Top level import would cause cyclic dependencies
         # pylint: disable=import-outside-toplevel
-        from pysparkling.sql.context import SQLContext
+        from .context import SQLContext
         self._sc = sparkContext
         self._wrapped = SQLContext(self._sc, self)
         SparkSession._instantiatedSession = self

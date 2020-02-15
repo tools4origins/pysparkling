@@ -23,12 +23,12 @@ try:
 except ImportError:
     numpy = None
 
-from pysparkling import fileio
-from pysparkling.utils import portable_hash
-from pysparkling.exceptions import FileAlreadyExistsException, ContextIsLockedException
-from pysparkling.samplers import (BernoulliSampler, PoissonSampler,
-                                  BernoulliSamplerPerKey, PoissonSamplerPerKey)
-from pysparkling.stat_counter import StatCounter
+from . import fileio
+from .utils import portable_hash
+from .exceptions import FileAlreadyExistsException, ContextIsLockedException
+from .samplers import (BernoulliSampler, PoissonSampler,
+                       BernoulliSamplerPerKey, PoissonSamplerPerKey)
+from .stat_counter import StatCounter
 
 maxint = sys.maxint if hasattr(sys, 'maxint') else sys.maxsize  # pylint: disable=no-member
 
@@ -2086,8 +2086,8 @@ class RDD(object):
         """
         # Top level import would cause cyclic dependencies
         # pylint: disable=import-outside-toplevel
-        from pysparkling import Context
-        from pysparkling.sql.session import SparkSession
+        from . import Context
+        from .sql.session import SparkSession
         sparkSession = SparkSession._instantiatedSession or SparkSession(Context())
         return sparkSession.createDataFrame(self, schema, sampleRatio)
 

@@ -7,18 +7,18 @@ from collections import Counter
 from copy import deepcopy
 from functools import partial
 
-from pysparkling.sql.internal_utils.joins import CROSS_JOIN, LEFT_JOIN, RIGHT_JOIN, FULL_JOIN, \
+from .internal_utils.joins import CROSS_JOIN, LEFT_JOIN, RIGHT_JOIN, FULL_JOIN, \
     INNER_JOIN, LEFT_ANTI_JOIN, LEFT_SEMI_JOIN
-from pysparkling.sql.utils import IllegalArgumentException
-from pysparkling.storagelevel import StorageLevel
+from .utils import IllegalArgumentException
+from ..storagelevel import StorageLevel
 
-from pysparkling.sql.types import Row, StructField, LongType, StructType, StringType, DataType
+from .types import Row, StructField, LongType, StructType, StringType, DataType
 
-from pysparkling.sql.internal_utils.column import resolve_column
-from pysparkling.sql.functions import parse, count, lit, struct, rand, map_from_arrays, array
-from pysparkling.sql.schema_utils import merge_schemas, get_schema_from_cols, infer_schema_from_rdd
-from pysparkling.stat_counter import RowStatHelper, CovarianceCounter
-from pysparkling.utils import reservoir_sample_and_size, compute_weighted_percentiles, \
+from .internal_utils.column import resolve_column
+from .functions import parse, count, lit, struct, rand, map_from_arrays, array
+from .schema_utils import merge_schemas, get_schema_from_cols, infer_schema_from_rdd
+from ..stat_counter import RowStatHelper, CovarianceCounter
+from ..utils import reservoir_sample_and_size, compute_weighted_percentiles, \
     get_keyfunc, row_from_keyed_values, str_half_width, pad_cell, merge_rows_joined_on_values, \
     format_cell, portable_hash, merge_rows
 

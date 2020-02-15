@@ -25,7 +25,7 @@ from array import array
 import ctypes
 import platform
 
-from pysparkling.sql.utils import ParseException, require_minimum_pandas_version
+from .utils import ParseException, require_minimum_pandas_version
 
 
 if sys.version >= "3":
