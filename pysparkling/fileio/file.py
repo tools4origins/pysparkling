@@ -3,8 +3,8 @@ from __future__ import absolute_import
 from io import BytesIO
 import logging
 
-from pysparkling.fileio import codec
-from pysparkling.fileio import fs
+from . import codec
+from . import fs
 
 log = logging.getLogger(__name__)
 
