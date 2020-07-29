@@ -27,7 +27,7 @@ from pysparkling.sql.expressions.mappers import MapConcat, MapFromEntries, MapEn
 from pysparkling.sql.expressions.operators import IsNull, BitwiseNot, Pow, Pmod, Substring
 from pysparkling.sql.expressions.strings import StringTrim, StringTranslate, StringRTrim, \
     StringRepeat, StringRPad, StringLTrim, StringLPad, StringLocate, Levenshtein, StringInStr, \
-    InitCap
+    InitCap, SoundEx
 from pysparkling.sql.expressions.userdefined import UserDefinedFunction
 from pysparkling.sql.types import DataType
 
@@ -1422,8 +1422,33 @@ def rtrim(e):
 def soundex(e):
     """
     :rtype: Column
+
+    >>> from pysparkling import Context
+    >>> from pysparkling.sql.session import SparkSession
+    >>> spark = SparkSession(Context())
+    >>> df = spark.createDataFrame([
+    ...   ("Robert", ),
+    ...   ("Rupert", ),
+    ...   ("Rubin", ),
+    ...   ("Ashcraft", ),
+    ...   ("Ashcroft", ),
+    ...   ("Tymczak", ),
+    ...   ("Honeyman", ),
+    ... ], ["str"])
+    >>> df.select("str", soundex("str")).orderBy("str").show()
+    +--------+------------+
+    |     str|soundex(str)|
+    +--------+------------+
+    |Ashcraft|        A261|
+    |Ashcroft|        A261|
+    |Honeyman|        H555|
+    |  Robert|        R163|
+    |   Rubin|        R150|
+    |  Rupert|        R163|
+    | Tymczak|        T522|
+    +--------+------------+
     """
-    raise NotImplementedError("Pysparkling does not support yet this function")
+    return SoundEx(parse(e))
 
 
 # noinspection PyShadowingBuiltins
