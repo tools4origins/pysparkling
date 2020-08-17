@@ -12,6 +12,8 @@ from pysparkling.sql.types import UserDefinedType, NumericType, DateType, \
     DecimalType, create_row
 from pysparkling.sql.utils import AnalysisException
 
+NO_TIMESTAMP_CONVERSION = object()
+
 JAVA_TIME_FORMAT_TOKENS = re.compile("(([a-zA-Z])\\2*|[^a-zA-Z]+)")
 
 TIME_REGEX = re.compile(
@@ -497,6 +499,9 @@ def get_unix_timestamp_parser(java_time_format):
 def get_datetime_parser(java_time_format):
     if java_time_format is None:
         return lambda value: cast_to_timestamp(value, StringType(), {})
+
+    if java_time_format is NO_TIMESTAMP_CONVERSION:
+        return lambda value: None
 
     python_pattern = ""
     for token, _ in JAVA_TIME_FORMAT_TOKENS.findall(java_time_format):
