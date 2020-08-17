@@ -5,10 +5,11 @@ import os
 import shutil
 
 from pysparkling import Row
-from pysparkling.sql.casts import cast_to_string, get_time_formatter
+from pysparkling.sql.casts import cast_to_string
 from pysparkling.sql.expressions.aggregate.aggregations import Aggregation
 from pysparkling.sql.expressions.mappers import StarOperator
 from pysparkling.sql.functions import col
+from pysparkling.sql.internal_utils.options import Options
 from pysparkling.sql.internal_utils.readwrite import to_option_stored_value
 from pysparkling.sql.utils import AnalysisException
 from pysparkling.utils import portable_hash, get_json_encoder
@@ -111,6 +112,11 @@ class WriteInFolder(Aggregation):
 
 
 class DataWriter(object):
+    default_options = dict(
+        dateFormat="yyyy-MM-dd",
+        timestampFormat="yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+    )
+
     def __init__(self, df, mode, options, partitioning_col_names, num_buckets,
                  bucket_col_names, sort_col_names):
         """
@@ -124,7 +130,7 @@ class DataWriter(object):
         :param sort_col_names: Optional[List[str]]
         """
         self.mode = mode
-        self.options = options
+        self.options = Options(self.default_options, options)
         self.partitioning_col_names = partitioning_col_names if partitioning_col_names else []
         self.num_buckets = num_buckets
         self.bucket_col_names = bucket_col_names if partitioning_col_names else []
@@ -145,18 +151,6 @@ class DataWriter(object):
     @property
     def encoding(self):
         return None
-
-    @property
-    def dateFormat(self):
-        return get_time_formatter(
-            self.options.get("dateformat", "yyyy-MM-dd")
-        )
-
-    @property
-    def timestampFormat(self):
-        return get_time_formatter(
-            self.options.get("timestampformat", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-        )
 
     def save(self):
         output_path = self.path
