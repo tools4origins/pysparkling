@@ -491,6 +491,7 @@ def get_unix_timestamp_parser(java_time_format):
     return time_parser
 
 
+@lru_cache
 def get_datetime_parser(java_time_format):
     if java_time_format is None:
         return lambda value: cast_to_timestamp(value, StringType(), {})
