@@ -467,7 +467,7 @@ def get_sub_formatter(group):
     return lambda value: token
 
 
-@lru_cache
+@lru_cache(64)
 def get_time_formatter(java_time_format):
     """
     Convert a Java time format to a Python time format.
@@ -495,7 +495,7 @@ def get_unix_timestamp_parser(java_time_format):
     return time_parser
 
 
-@lru_cache
+@lru_cache(64)
 def get_datetime_parser(java_time_format):
     if java_time_format is None:
         return lambda value: cast_to_timestamp(value, StringType(), {})
