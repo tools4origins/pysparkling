@@ -396,6 +396,8 @@ def get_caster(from_type, to_type, options):
         return partial(identity, options=options)
     if to_type_class == NullType:
         return partial(cast_from_none, from_type=from_type, options=options)
+    if to_type_class == TimestampType:
+        return get_datetime_parser(options.get("timestampFormat"))
     if to_type_class in DESTINATION_DEPENDENT_CASTERS:
         caster = DESTINATION_DEPENDENT_CASTERS[to_type_class]
         return partial(caster, from_type=from_type, to_type=to_type, options=options)
