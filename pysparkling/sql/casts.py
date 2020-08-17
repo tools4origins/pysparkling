@@ -21,11 +21,11 @@ TIME_REGEX = re.compile(
 GMT = pytz.timezone("GMT")
 
 
-def identity(value):
+def identity(value, options):
     return value
 
 
-def cast_from_none(value, from_type):
+def cast_from_none(value, from_type, options):
     if value is None:
         return None
     raise AnalysisException(
@@ -36,17 +36,15 @@ def cast_from_none(value, from_type):
     )
 
 
-def default_date_formatter(date):
-    return date.strftime("%Y-%m-%d")
-
-
 def default_timestamp_formatter(timestamp):
     return timestamp.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def cast_to_string(value, from_type,
-                   date_format=default_date_formatter,
-                   timestamp_format=default_timestamp_formatter):
+def cast_to_string(value, from_type, options):
+    date_format = get_time_formatter(options.get("dateformat", "yyyy-MM-dd"))
+    timestamp_format = (get_time_formatter(options["timestampformat"])
+                        if "timestampformat" in options
+                        else default_timestamp_formatter)
     if value is None:
         return "null"
     if isinstance(from_type, DateType):
@@ -54,24 +52,24 @@ def cast_to_string(value, from_type,
     if isinstance(from_type, TimestampType):
         return timestamp_format(value)
     if isinstance(from_type, (ArrayType, StructType, MapType)):
-        return cast_nested_to_str(value, from_type, date_format, timestamp_format)
+        return cast_nested_to_str(value, from_type, options)
     if isinstance(from_type, BooleanType):
         return str(value).lower()
     return str(value)
 
 
-def cast_nested_to_str(value, from_type, date_format, timestamp_format):
+def cast_nested_to_str(value, from_type, options):
     if isinstance(from_type, (ArrayType, StructType)):
-        return cast_sequence(value, from_type, date_format, timestamp_format)
+        return cast_sequence(value, from_type, options)
     if isinstance(from_type, MapType):
-        return cast_map(value, from_type, date_format, timestamp_format)
+        return cast_map(value, from_type, options)
     raise TypeError("Unable to cast {0}".format(type(from_type)))
 
 
-def cast_map(value, from_type, date_format, timestamp_format):
+def cast_map(value, from_type, options):
     casted_values = [
-        (cast_to_string(key, from_type.keyType, date_format, timestamp_format),
-         (cast_to_string(sub_value, from_type.valueType, date_format, timestamp_format)
+        (cast_to_string(key, from_type.keyType, options),
+         (cast_to_string(sub_value, from_type.valueType, options)
           if sub_value is not None else None))
         for key, sub_value in value.items()
     ]
@@ -83,14 +81,14 @@ def cast_map(value, from_type, date_format, timestamp_format):
     )
 
 
-def cast_sequence(value, from_type, date_format, timestamp_format):
+def cast_sequence(value, from_type, options):
     if isinstance(from_type, StructType):
         types = [field.dataType for field in from_type.fields]
     else:
         types = [from_type.elementType] * len(value)
     casted_values = [
         cast_to_string(
-            sub_value, sub_value_type, date_format, timestamp_format
+            sub_value, sub_value_type, options
         ) if sub_value is not None else None
         for sub_value, sub_value_type in zip(value, types)
     ]
@@ -101,7 +99,7 @@ def cast_sequence(value, from_type, date_format, timestamp_format):
     return casted_value
 
 
-def cast_to_binary(value, from_type):
+def cast_to_binary(value, from_type, options):
     if isinstance(from_type, StringType):
         # noinspection PyTypeChecker
         return bytearray(value, 'utf-8')
@@ -110,7 +108,7 @@ def cast_to_binary(value, from_type):
     raise AnalysisException("Cannot cast type {0} to binary".format(from_type))
 
 
-def cast_to_date(value, from_type):
+def cast_to_date(value, from_type, options):
     if isinstance(value, datetime.datetime):
         return value.date()
     if isinstance(value, datetime.date):
@@ -183,12 +181,12 @@ def parse_timezone(tz_as_string):
     return tzinfo
 
 
-def cast_to_timestamp(value, from_type):
+def cast_to_timestamp(value, from_type, options):
     if value == "" or value is None:
         return None
     if isinstance(value, str):
         date_as_string, time_as_string = split_datetime_as_string(value)
-        date = cast_to_date(date_as_string, from_type)
+        date = cast_to_date(date_as_string, from_type, options=options)
         time_of_day = parse_time_as_string(time_as_string)
 
         return None if date is None or time_of_day is None else datetime.datetime(
@@ -228,7 +226,7 @@ def split_datetime_as_string(value):
     return date_as_string, time_as_string
 
 
-def cast_to_boolean(value, from_type):
+def cast_to_boolean(value, from_type, options):
     if value == "" or value is None:
         return None
     if isinstance(from_type, StringType):
@@ -238,14 +236,14 @@ def cast_to_boolean(value, from_type):
     raise AnalysisException("Cannot cast type {0} to boolean".format(from_type))
 
 
-def _cast_to_bounded_type(name, min_value, max_value, value, from_type):
+def _cast_to_bounded_type(name, min_value, max_value, value, from_type, options):
     if value == "" or value is None:
         return None
     size = max_value - min_value + 1
     if isinstance(from_type, DateType):
         return None
     if isinstance(from_type, TimestampType):
-        return cast_to_byte(cast_to_float(value, from_type), FloatType())
+        return cast_to_byte(cast_to_float(value, from_type, options=options), FloatType(), options=options)
     if isinstance(from_type, StringType):
         casted_value = int(value)
         return casted_value if min_value <= casted_value <= max_value else None
@@ -255,28 +253,28 @@ def _cast_to_bounded_type(name, min_value, max_value, value, from_type):
     raise AnalysisException("Cannot cast type {0} to {1}".format(from_type, name))
 
 
-def cast_to_byte(value, from_type):
+def cast_to_byte(value, from_type, options):
     min_value, max_value = -128, 127
-    return _cast_to_bounded_type("byte", min_value, max_value, value, from_type)
+    return _cast_to_bounded_type("byte", min_value, max_value, value, from_type, options=options)
 
 
-def cast_to_short(value, from_type):
+def cast_to_short(value, from_type, options):
     min_value, max_value = -32768, 32767
-    return _cast_to_bounded_type("short", min_value, max_value, value, from_type)
+    return _cast_to_bounded_type("short", min_value, max_value, value, from_type, options=options)
 
 
-def cast_to_int(value, from_type):
+def cast_to_int(value, from_type, options):
     min_value, max_value = -2147483648, 2147483647
-    return _cast_to_bounded_type("int", min_value, max_value, value, from_type)
+    return _cast_to_bounded_type("int", min_value, max_value, value, from_type, options=options)
 
 
-def cast_to_long(value, from_type):
+def cast_to_long(value, from_type, options):
     min_value, max_value = -9223372036854775808, 9223372036854775807
-    return _cast_to_bounded_type("long", min_value, max_value, value, from_type)
+    return _cast_to_bounded_type("long", min_value, max_value, value, from_type, options=options)
 
 
-def cast_to_decimal(value, from_type, to_type):
-    value_as_float = cast_to_float(value, from_type)
+def cast_to_decimal(value, from_type, to_type, options):
+    value_as_float = cast_to_float(value, from_type, options=options)
     if value_as_float is None:
         return None
     if value_as_float >= 10 ** (to_type.precision - to_type.scale):
@@ -286,18 +284,18 @@ def cast_to_decimal(value, from_type, to_type):
     return round(value_as_float, ndigits=to_type.scale)
 
 
-def cast_to_float(value, from_type):
+def cast_to_float(value, from_type, options):
     # NB: pysparkling does not mimic the loss of accuracy of Spark nor value
     # bounding between float min&max values
     try:
-        return cast_value(value)
+        return cast_value(value, options=options)
     except ValueError:
         if isinstance(from_type, (DateType, TimestampType, NumericType, StringType)):
             return None
         raise AnalysisException("Cannot cast type {0} to float".format(from_type))
 
 
-def cast_value(value):
+def cast_value(value, options):
     if value == "":
         return None
     if isinstance(value, datetime.datetime):
@@ -314,13 +312,13 @@ def cast_value(value):
     raise ValueError("Unable to cast from value")
 
 
-def cast_to_double(value, from_type):
-    return cast_to_float(value, from_type)
+def cast_to_double(value, from_type, options):
+    return cast_to_float(value, from_type, options=options)
 
 
-def cast_to_array(value, from_type, to_type):
+def cast_to_array(value, from_type, to_type, options):
     if isinstance(from_type, ArrayType):
-        caster = get_caster(from_type=from_type.elementType, to_type=to_type.elementType)
+        caster = get_caster(from_type=from_type.elementType, to_type=to_type.elementType, options=options)
         return [
             caster(sub_value) if sub_value is not None else None
             for sub_value in value
@@ -328,10 +326,10 @@ def cast_to_array(value, from_type, to_type):
     raise AnalysisException("Cannot cast type {0} to array".format(from_type))
 
 
-def cast_to_map(value, from_type, to_type):
+def cast_to_map(value, from_type, to_type, options):
     if isinstance(from_type, MapType):
-        key_caster = get_caster(from_type=from_type.keyType, to_type=to_type.keyType)
-        value_caster = get_caster(from_type=from_type.valueType, to_type=to_type.valueType)
+        key_caster = get_caster(from_type=from_type.keyType, to_type=to_type.keyType, options=options)
+        value_caster = get_caster(from_type=from_type.valueType, to_type=to_type.valueType, options=options)
         return {
             key_caster(key): (value_caster(sub_value) if sub_value is not None else None)
             for key, sub_value in value.items()
@@ -339,16 +337,16 @@ def cast_to_map(value, from_type, to_type):
     raise AnalysisException("Cannot cast type {0} to map".format(from_type))
 
 
-def cast_to_struct(value, from_type, to_type):
+def cast_to_struct(value, from_type, to_type, options):
     if isinstance(from_type, StructType):
-        return get_struct_caster(from_type, to_type)(value)
+        return get_struct_caster(from_type, to_type, options)(value)
     raise NotImplementedError("Pysparkling does not support yet cast to struct")
 
 
-def get_struct_caster(from_type, to_type):
+def get_struct_caster(from_type, to_type, options):
     names = [to_field.name for to_field in to_type.fields]
     casters = [
-        get_caster(from_field.dataType, to_field.dataType)
+        get_caster(from_field.dataType, to_field.dataType, options)
         for from_field, to_field in zip(from_type.fields, to_type.fields)
     ]
 
@@ -362,7 +360,7 @@ def get_struct_caster(from_type, to_type):
     return do_cast_to_struct
 
 
-def cast_to_user_defined_type(value, from_type):
+def cast_to_user_defined_type(value, from_type, options):
     raise NotImplementedError("Pysparkling does not support yet cast to UDF")
 
 
@@ -392,17 +390,17 @@ CASTERS = {
 }
 
 
-def get_caster(from_type, to_type):
+def get_caster(from_type, to_type, options):
     to_type_class = to_type.__class__
     if from_type == to_type:
-        return identity
+        return partial(identity, options=options)
     if to_type_class == NullType:
-        return partial(cast_from_none, from_type=from_type)
+        return partial(cast_from_none, from_type=from_type, options=options)
     if to_type_class in DESTINATION_DEPENDENT_CASTERS:
         caster = DESTINATION_DEPENDENT_CASTERS[to_type_class]
-        return partial(caster, from_type=from_type, to_type=to_type)
+        return partial(caster, from_type=from_type, to_type=to_type, options=options)
     if to_type_class in CASTERS:
-        return partial(CASTERS[to_type_class], from_type=from_type)
+        return partial(CASTERS[to_type_class], from_type=from_type, options=options)
     raise AnalysisException("Cannot cast from {0} to {1}".format(from_type, to_type))
 
 
@@ -494,7 +492,7 @@ def get_unix_timestamp_parser(java_time_format):
 
 def get_datetime_parser(java_time_format):
     if java_time_format is None:
-        return lambda value: cast_to_timestamp(value, StringType())
+        return lambda value: cast_to_timestamp(value, StringType(), {})
 
     python_pattern = ""
     for token, _ in JAVA_TIME_FORMAT_TOKENS.findall(java_time_format):
