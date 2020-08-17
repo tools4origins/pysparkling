@@ -245,7 +245,8 @@ def _cast_to_bounded_type(name, min_value, max_value, value, from_type, options)
     if isinstance(from_type, DateType):
         return None
     if isinstance(from_type, TimestampType):
-        return cast_to_byte(cast_to_float(value, from_type, options=options), FloatType(), options=options)
+        timestamp_as_float = cast_to_float(value, from_type, options=options)
+        return cast_to_byte(timestamp_as_float, FloatType(), options=options)
     if isinstance(from_type, StringType):
         casted_value = int(value)
         return casted_value if min_value <= casted_value <= max_value else None
@@ -320,7 +321,9 @@ def cast_to_double(value, from_type, options):
 
 def cast_to_array(value, from_type, to_type, options):
     if isinstance(from_type, ArrayType):
-        caster = get_caster(from_type=from_type.elementType, to_type=to_type.elementType, options=options)
+        caster = get_caster(
+            from_type=from_type.elementType, to_type=to_type.elementType, options=options
+        )
         return [
             caster(sub_value) if sub_value is not None else None
             for sub_value in value
@@ -330,8 +333,12 @@ def cast_to_array(value, from_type, to_type, options):
 
 def cast_to_map(value, from_type, to_type, options):
     if isinstance(from_type, MapType):
-        key_caster = get_caster(from_type=from_type.keyType, to_type=to_type.keyType, options=options)
-        value_caster = get_caster(from_type=from_type.valueType, to_type=to_type.valueType, options=options)
+        key_caster = get_caster(
+            from_type=from_type.keyType, to_type=to_type.keyType, options=options
+        )
+        value_caster = get_caster(
+            from_type=from_type.valueType, to_type=to_type.valueType, options=options
+        )
         return {
             key_caster(key): (value_caster(sub_value) if sub_value is not None else None)
             for key, sub_value in value.items()
