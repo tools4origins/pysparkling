@@ -10,6 +10,7 @@ from pysparkling.sql.expressions.arrays import ArraysZip, ArrayRepeat, Flatten, 
     ArrayMin, SortArray, Size, ArrayExcept, ArrayUnion, ArrayIntersect, ArrayDistinct, \
     ArrayRemove, ArraySort, ElementAt, ArrayPosition, ArrayJoin, ArraysOverlap, ArrayContains, \
     MapFromArraysColumn, MapColumn, ArrayColumn, Sequence, Slice
+from pysparkling.sql.expressions.csvs import SchemaOfCsv
 from pysparkling.sql.expressions.dates import ToUTCTimestamp, FromUTCTimestamp, TruncTimestamp, \
     TruncDate, ParseToDate, ParseToTimestamp, UnixTimestamp, CurrentTimestamp, FromUnixTime, \
     WeekOfYear, NextDay, MonthsBetween, LastDay, DayOfYear, DayOfMonth, DayOfWeek, Month, Quarter, \
@@ -30,6 +31,7 @@ from pysparkling.sql.expressions.strings import StringTrim, StringTranslate, Str
     InitCap, SoundEx
 from pysparkling.sql.expressions.userdefined import UserDefinedFunction
 from pysparkling.sql.types import DataType
+from pysparkling.sql.utils import AnalysisException
 
 
 def col(colName):
@@ -2401,8 +2403,25 @@ def from_csv(e, schema, options=None):
 def schema_of_csv(csv, options=None):
     """
     :rtype: Column
+
+    >>> from pysparkling import Context, Row
+    >>> from pysparkling.sql.session import SparkSession
+    >>> spark = SparkSession(Context())
+    >>> spark.range(1).select(schema_of_csv("1,test,2020-05-05")).show(20, False)
+    +-------------------------------------+
+    |schema_of_csv(1,test,2020-05-05)     |
+    +-------------------------------------+
+    |struct<_c0:int,_c1:string,_c2:string>|
+    +-------------------------------------+
     """
-    raise NotImplementedError("Pysparkling does not support yet this function")
+    if isinstance(csv, str):
+        csv = lit(csv)
+    elif not isinstance(csv, Column) or not isinstance(csv.expr, Literal):
+        raise AnalysisException(
+            "type mismatch: The input csv should be a string literal and not null; "
+            "however, got {0}.".format(csv)
+        )
+    return col(SchemaOfCsv(parse(csv), options))
 
 
 def to_csv(e, options=None):
