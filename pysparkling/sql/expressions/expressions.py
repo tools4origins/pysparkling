@@ -56,13 +56,10 @@ class Expression(object):
 
     @staticmethod
     def children_merge(children, row, schema):
-        # Top level import would cause cyclic dependencies
-        # pylint: disable=import-outside-toplevel
-        from pysparkling.sql.column import Column
         for child in children:
             if isinstance(child, Expression):
                 child.recursive_merge(row, schema)
-            elif isinstance(child, Column) and isinstance(child.expr, Expression):
+            elif hasattr(child, "expr") and isinstance(child.expr, Expression):
                 child.expr.recursive_merge(row, schema)
             elif isinstance(child, (list, set, tuple)):
                 Expression.children_merge(child, row, schema)
