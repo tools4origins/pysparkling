@@ -89,7 +89,8 @@ class DataFrameReader(OptionUtils):
             return self._df(self._jreader.json(path.collect()))
         raise TypeError("path can be only string, list or RDD")
 
-    def text(self, paths, wholetext=False, lineSep=None, pathGlobFilter=None, recursiveFileLookup=None):
+    def text(self, paths, wholetext=False, lineSep=None,
+             pathGlobFilter=None, recursiveFileLookup=None):
         self._set_opts(wholetext=wholetext,
                        lineSep=lineSep,
                        pathGlobFilter=pathGlobFilter,

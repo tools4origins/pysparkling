@@ -56,7 +56,9 @@ def resolve_partitions(patterns):
                 )
             )
         partitioning_fields = partitioning_field_sets.pop()
-        partition_schema = guess_schema_from_strings(partitioning_fields, partitions.values())
+        partition_schema = guess_schema_from_strings(
+            partitioning_fields, partitions.values(), options={}
+        )
     else:
         partition_schema = None
 

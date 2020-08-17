@@ -44,7 +44,8 @@ class CSVReader(object):
         if self.schema is not None:
             schema = self.schema
         elif self.options.inferSchema:
-            schema = guess_schema_from_strings(rdd.take(1)[0].__fields__, rdd.collect(), options=self.options)
+            fields = rdd.take(1)[0].__fields__
+            schema = guess_schema_from_strings(fields, rdd.collect(), options=self.options)
         else:
             schema = infer_schema_from_rdd(rdd)
 
@@ -58,7 +59,9 @@ class CSVReader(object):
         else:
             full_schema = schema
 
-        cast_row = get_caster(from_type=schema_with_string, to_type=full_schema, options=self.options)
+        cast_row = get_caster(
+            from_type=schema_with_string, to_type=full_schema, options=self.options
+        )
         casted_rdd = rdd.map(cast_row)
         casted_rdd._name = paths
 
@@ -83,14 +86,17 @@ def parse_csv_file(partitions, partition_schema, schema, options, file_name):
     null_value = ""
     rows = []
     for record in records:
-        row = csv_record_to_row(record, options, schema, header, null_value, partition_schema, partitions[file_name])
+        row = csv_record_to_row(
+            record, options, schema, header, null_value, partition_schema, partitions[file_name]
+        )
         row.set_input_file_name(file_name)
         rows.append(row)
 
     return rows
 
 
-def csv_record_to_row(record, options, schema=None, header=None, null_value=None, partition_schema=None, partition=None):
+def csv_record_to_row(record, options, schema=None, header=None,
+                      null_value=None, partition_schema=None, partition=None):
     record_values = [val if val != null_value else None for val in record.split(options.sep)]
     if schema is not None:
         field_names = [f.name for f in schema.fields]

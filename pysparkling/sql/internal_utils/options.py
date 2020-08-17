@@ -60,4 +60,4 @@ class Options(dict):
     def __getattr__(self, item):
         if not item.startswith("_"):
             return self[item.lower()]
-        return super(Options, self).__getattr__(item)
+        return getattr(super(Options, self), item)

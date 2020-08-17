@@ -212,7 +212,7 @@ class SoundEx(UnaryExpression):
                 continue
             if code == 7:
                 continue
-            if code != 0 and code != last_code:
+            if code not in (0, last_code):
                 res.append(str(code))
                 if len(res) > 3:
                     break

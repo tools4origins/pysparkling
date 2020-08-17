@@ -291,7 +291,9 @@ class Cast(Expression):
         super(Cast, self).__init__(column)
         self.column = column
         self.destination_type = destination_type
-        self.caster = get_caster(from_type=self.column.data_type, to_type=destination_type, options={})
+        self.caster = get_caster(
+            from_type=self.column.data_type, to_type=destination_type, options={}
+        )
 
     def eval(self, row, schema):
         return self.caster(self.column.eval(row, schema))
