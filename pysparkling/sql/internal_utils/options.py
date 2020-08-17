@@ -58,4 +58,6 @@ class Options(dict):
         return super(Options, self).__contains__(o.lower())
 
     def __getattr__(self, item):
-        return self[item.lower()]
+        if not item.startswith("_"):
+            return self[item.lower()]
+        return super(Options, self).__getattr__(item)
