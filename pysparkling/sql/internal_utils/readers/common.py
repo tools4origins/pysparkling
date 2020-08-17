@@ -1,5 +1,6 @@
 from pysparkling.sql.internal_utils.readers.csvreader import CSVReader
 from pysparkling.sql.internal_utils.readers.jsonreader import JSONReader
+from pysparkling.sql.internal_utils.readers.textreader import TextReader
 from pysparkling.sql.internal_utils.readwrite import OptionUtils, to_option_stored_value
 from pysparkling.sql.types import StructType
 
@@ -27,3 +28,6 @@ class InternalReader(OptionUtils):
 
     def json(self, paths):
         return JSONReader(self._spark, paths, self._schema, self._options).read()
+
+    def text(self, paths):
+        return TextReader(self._spark, paths, self._schema, self._options).read()
