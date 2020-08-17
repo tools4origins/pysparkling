@@ -597,9 +597,9 @@ def get_json_encoder(options):
         # pylint doesn't like the behavior but it is the expected one
         # pylint: disable=E0202
         def default(self, o):
-            if isinstance(o, datetime.date):
-                return timestamp_formatter(o)
             if isinstance(o, datetime.datetime):
+                return timestamp_formatter(o)
+            if isinstance(o, datetime.date):
                 return date_formatter(o)
             return super(CustomJSONEncoder, self).default(o)
 
