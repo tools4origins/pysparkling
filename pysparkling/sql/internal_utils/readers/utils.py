@@ -63,14 +63,14 @@ def resolve_partitions(patterns):
     return partitions, partition_schema
 
 
-def guess_schema_from_strings(schema_fields, data):
+def guess_schema_from_strings(schema_fields, data, options):
     field_values = [
         (field, [row[field] for row in data])
         for field in schema_fields
     ]
 
     field_types_and_values = [
-        (field, guess_type_from_values_as_string(values))
+        (field, guess_type_from_values_as_string(values, options))
         for field, values in field_values
     ]
 
@@ -82,7 +82,7 @@ def guess_schema_from_strings(schema_fields, data):
     return schema
 
 
-def guess_type_from_values_as_string(values):
+def guess_type_from_values_as_string(values, options):
     # Reproduces inferences available in Spark
     # PartitioningUtils.inferPartitionColumnValue()
     # located in org.apache.spark.sql.execution.datasources
@@ -96,7 +96,7 @@ def guess_type_from_values_as_string(values):
     )
     string_type = StringType()
     for tested_type in tested_types:
-        type_caster = get_caster(from_type=string_type, to_type=tested_type)
+        type_caster = get_caster(from_type=string_type, to_type=tested_type, options=options)
         try:
             for value in values:
                 casted_value = type_caster(value)

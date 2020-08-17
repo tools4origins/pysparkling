@@ -215,8 +215,7 @@ class CSVWriter(DataWriter):
             value = cast_to_string(
                 value,
                 from_type=field.dataType,
-                date_format=self.dateFormat,
-                timestamp_format=self.timestampFormat
+                options=self.options
             )
         if self.ignoreLeadingWhiteSpace:
             value = value.rstrip()
@@ -327,10 +326,7 @@ class JSONWriter(DataWriter):
         super(JSONWriter, self).__init__(df, mode, options, partitioning_col_names,
                                          num_buckets, bucket_col_names, sort_col_names)
 
-        self.encoder = get_json_encoder(
-            date_formatter=self.dateFormat,
-            timestamp_formatter=self.timestampFormat
-        )
+        self.encoder = get_json_encoder(self.options)
 
     def check_options(self):
         unsupported_options = {

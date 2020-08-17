@@ -70,7 +70,7 @@ class JSONReader(object):
             ]
         )
 
-        cast_row = get_struct_caster(inferred_schema, full_schema)
+        cast_row = get_struct_caster(inferred_schema, full_schema, options=self.options)
         casted_rdd = rdd.map(cast_row)
         casted_rdd._name = paths
 

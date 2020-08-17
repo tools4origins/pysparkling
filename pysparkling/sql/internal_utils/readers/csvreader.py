@@ -44,7 +44,7 @@ class CSVReader(object):
         if self.schema is not None:
             schema = self.schema
         elif self.options.inferSchema:
-            schema = guess_schema_from_strings(rdd.take(1)[0].__fields__, rdd.collect())
+            schema = guess_schema_from_strings(rdd.take(1)[0].__fields__, rdd.collect(), options=self.options)
         else:
             schema = infer_schema_from_rdd(rdd)
 
@@ -58,7 +58,7 @@ class CSVReader(object):
         else:
             full_schema = schema
 
-        cast_row = get_caster(from_type=schema_with_string, to_type=full_schema)
+        cast_row = get_caster(from_type=schema_with_string, to_type=full_schema, options=self.options)
         casted_rdd = rdd.map(cast_row)
         casted_rdd._name = paths
 
