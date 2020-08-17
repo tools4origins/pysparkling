@@ -1,7 +1,7 @@
 import datetime
 import re
 import time
-from functools import partial
+from functools import partial, lru_cache
 
 import pytz
 from dateutil.tz import tzlocal
@@ -463,6 +463,7 @@ def get_sub_formatter(group):
     return lambda value: token
 
 
+@lru_cache
 def get_time_formatter(java_time_format):
     """
     Convert a Java time format to a Python time format.
