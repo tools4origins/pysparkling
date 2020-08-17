@@ -12,6 +12,8 @@ from pysparkling.sql.types import DataType, NullType, DateType, TimestampType, A
     IntegerType, StringType, BooleanType, StructType, StructField, Row, DoubleType, LongType, \
     DecimalType, ByteType
 
+BASE_OPTIONS = {}
+
 
 class CastTests(TestCase):
     maxDiff = None
@@ -22,29 +24,37 @@ class CastTests(TestCase):
 
     def test_identity(self):
         x = object()
-        self.assertEqual(identity(x), x)
+        self.assertEqual(identity(x, options=BASE_OPTIONS), x)
 
     def test_cast_from_none(self):
-        self.assertEqual(cast_from_none(None, DataType()), None)
+        self.assertEqual(cast_from_none(None, DataType(), options=BASE_OPTIONS), None)
 
     def test_cast_null_to_string(self):
-        self.assertEqual(cast_to_string(None, NullType()), "null")
+        self.assertEqual(cast_to_string(None, NullType(), options=BASE_OPTIONS), "null")
 
     def test_cast_date_to_string(self):
         self.assertEqual(
-            cast_to_string(datetime.date(2019, 8, 28), DateType()),
+            cast_to_string(datetime.date(2019, 8, 28), DateType(), options=BASE_OPTIONS),
             "2019-08-28"
         )
 
     def test_cast_timestamp_to_string(self):
         self.assertEqual(
-            cast_to_string(datetime.datetime(2019, 8, 28, 13, 5, 0), TimestampType()),
+            cast_to_string(
+                datetime.datetime(2019, 8, 28, 13, 5, 0),
+                TimestampType(),
+                options=BASE_OPTIONS
+            ),
             "2019-08-28 13:05:00"
         )
 
     def test_cast_array_to_string(self):
         self.assertEqual(
-            cast_to_string([[[1, None, 2], []]], ArrayType(ArrayType(ArrayType(IntegerType())))),
+            cast_to_string(
+                [[[1, None, 2], []]],
+                ArrayType(ArrayType(ArrayType(IntegerType()))),
+                options=BASE_OPTIONS
+            ),
             "[[[1,, 2], []]]"
         )
 
@@ -55,7 +65,8 @@ class CastTests(TestCase):
                 MapType(
                     BooleanType(),
                     MapType(StringType(), IntegerType())
-                )
+                ),
+                options=BASE_OPTIONS
             ),
             "[true -> [one -> 1, nothing ->, three -> 3]]"
         )
@@ -80,141 +91,141 @@ class CastTests(TestCase):
                     StructField("b", LongType(), True),
                     StructField("c", BooleanType(), True),
                     StructField("d", DoubleType(), True)
-                ])
-
+                ]),
+                options=BASE_OPTIONS
             ),
             "[[value ->, b -> [c -> 7]],, true, 5.2]"
         )
 
     def test_cast_true_to_boolean(self):
         self.assertEqual(
-            cast_to_boolean("TrUe", StringType()),
+            cast_to_boolean("TrUe", StringType(), options=BASE_OPTIONS),
             True
         )
 
     def test_cast_false_to_boolean(self):
         self.assertEqual(
-            cast_to_boolean("FalsE", StringType()),
+            cast_to_boolean("FalsE", StringType(), options=BASE_OPTIONS),
             False
         )
 
     def test_cast_random_string_to_boolean(self):
         self.assertEqual(
-            cast_to_boolean("pysparkling", StringType()),
+            cast_to_boolean("pysparkling", StringType(), options=BASE_OPTIONS),
             None
         )
 
     def test_cast_empty_string_to_boolean(self):
         self.assertEqual(
-            cast_to_boolean("", StringType()),
+            cast_to_boolean("", StringType(), options=BASE_OPTIONS),
             None
         )
 
     def test_cast_falsish_to_boolean(self):
         self.assertEqual(
-            cast_to_boolean(0, IntegerType()),
+            cast_to_boolean(0, IntegerType(), options=BASE_OPTIONS),
             False
         )
 
     def test_cast_truish_to_boolean(self):
         self.assertEqual(
-            cast_to_boolean(-1, IntegerType()),
+            cast_to_boolean(-1, IntegerType(), options=BASE_OPTIONS),
             True
         )
 
     def test_cast_date_to_byte(self):
         self.assertEqual(
-            cast_to_byte(datetime.date(2019, 8, 28), DateType()),
+            cast_to_byte(datetime.date(2019, 8, 28), DateType(), options=BASE_OPTIONS),
             None
         )
 
     def test_cast_small_string_to_byte(self):
         self.assertEqual(
-            cast_to_byte("-127", StringType()),
+            cast_to_byte("-127", StringType(), options=BASE_OPTIONS),
             -127
         )
 
     def test_cast_bigger_string_to_byte(self):
         self.assertEqual(
-            cast_to_byte("-1024", StringType()),
+            cast_to_byte("-1024", StringType(), options=BASE_OPTIONS),
             None
         )
 
     def test_cast_float_to_byte(self):
         self.assertEqual(
-            cast_to_byte(-128.8, FloatType()),
+            cast_to_byte(-128.8, FloatType(), options=BASE_OPTIONS),
             -128
         )
 
     def test_cast_float_to_byte_with_loop(self):
         self.assertEqual(
-            cast_to_byte(-730.8, FloatType()),
+            cast_to_byte(-730.8, FloatType(), options=BASE_OPTIONS),
             38
         )
 
     def test_cast_small_string_to_short(self):
         self.assertEqual(
-            cast_to_short("32767", StringType()),
+            cast_to_short("32767", StringType(), options=BASE_OPTIONS),
             32767
         )
 
     def test_cast_bigger_string_to_short(self):
         self.assertEqual(
-            cast_to_short("32768", StringType()),
+            cast_to_short("32768", StringType(), options=BASE_OPTIONS),
             None
         )
 
     def test_cast_float_to_short(self):
         self.assertEqual(
-            cast_to_short(32767, FloatType()),
+            cast_to_short(32767, FloatType(), options=BASE_OPTIONS),
             32767
         )
 
     def test_cast_float_to_short_with_loop(self):
         self.assertEqual(
-            cast_to_short(32768, FloatType()),
+            cast_to_short(32768, FloatType(), options=BASE_OPTIONS),
             -32768
         )
 
     def test_cast_small_string_to_int(self):
         self.assertEqual(
-            cast_to_int("2147483647", StringType()),
+            cast_to_int("2147483647", StringType(), options=BASE_OPTIONS),
             2147483647
         )
 
     def test_cast_bigger_string_to_int(self):
         self.assertEqual(
-            cast_to_int("2147483648", StringType()),
+            cast_to_int("2147483648", StringType(), options=BASE_OPTIONS),
             None
         )
 
     def test_cast_float_to_int(self):
         self.assertEqual(
-            cast_to_int(2147483647, LongType()),
+            cast_to_int(2147483647, LongType(), options=BASE_OPTIONS),
             2147483647
         )
 
     def test_cast_float_to_int_with_loop(self):
         self.assertEqual(
-            cast_to_int(2147483648, LongType()),
+            cast_to_int(2147483648, LongType(), options=BASE_OPTIONS),
             -2147483648
         )
 
     def test_cast_small_string_to_long(self):
         self.assertEqual(
-            cast_to_long("9223372036854775807", StringType()),
+            cast_to_long("9223372036854775807", StringType(), options=BASE_OPTIONS),
             9223372036854775807
         )
 
     def test_cast_bigger_string_to_long(self):
         self.assertEqual(
-            cast_to_long("9223372036854775808", StringType()),
+            cast_to_long("9223372036854775808", StringType(), options=BASE_OPTIONS),
             None
         )
 
     def test_cast_float_to_long(self):
         self.assertEqual(
-            cast_to_long(9223372036854775807, LongType()),
+            cast_to_long(9223372036854775807, LongType(), options=BASE_OPTIONS),
             9223372036854775807
         )
 
@@ -227,7 +238,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_float(
                 datetime.datetime(2019, 8, 28, 0, 2, 40),
-                TimestampType()
+                TimestampType(),
+                options=BASE_OPTIONS
             ),
             1566943360.0
         )
@@ -236,7 +248,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_binary(
                 "test",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             bytearray(b'test')
         )
@@ -245,7 +258,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_date(
                 "2019",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             datetime.date(2019, 1, 1)
         )
@@ -254,7 +268,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_date(
                 "2019-02",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             datetime.date(2019, 2, 1)
         )
@@ -263,7 +278,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_date(
                 "2019-03-01",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             datetime.date(2019, 3, 1)
         )
@@ -272,7 +288,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_date(
                 "2019-4-1",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             datetime.date(2019, 4, 1)
         )
@@ -282,7 +299,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_date(
                 "2019-10-0001Tthis should be ignored",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             datetime.date(2019, 10, 1)
         )
@@ -291,7 +309,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_timestamp(
                 "2019-10-01T05:40:36",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             datetime.datetime(2019, 10, 1, 5, 40, 36)
         )
@@ -300,7 +319,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_timestamp(
                 "2019-10-01T05:40:36Z",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             datetime.datetime(2019, 10, 1, 7, 40, 36)
         )
@@ -309,7 +329,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_timestamp(
                 "2019-10-01T05:40:36+3:5",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             datetime.datetime(2019, 10, 1, 4, 35, 36)
         )
@@ -318,7 +339,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_timestamp(
                 "2019-10-01T05:40:36+03",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             datetime.datetime(2019, 10, 1, 4, 40, 36)
         )
@@ -327,7 +349,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_timestamp(
                 "2019-10-01T05:40:36+03:",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             datetime.datetime(2019, 10, 1, 4, 40, 36)
         )
@@ -336,7 +359,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_timestamp(
                 "2019-10-01",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             datetime.datetime(2019, 10, 1, 0, 0, 0)
         )
@@ -346,7 +370,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_timestamp(
                 "10:50:39",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             datetime.datetime(today.year, today.month, today.day, 10, 50, 39)
         )
@@ -356,7 +381,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_timestamp(
                 "10:50",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             datetime.datetime(today.year, today.month, today.day, 10, 50, 0)
         )
@@ -366,7 +392,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_timestamp(
                 "10::37",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             datetime.datetime(today.year, today.month, today.day, 10, 0, 37)
         )
@@ -377,7 +404,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_timestamp(
                 "10:",
-                StringType()
+                StringType(),
+                options=BASE_OPTIONS
             ),
             datetime.datetime(today.year, today.month, today.day, 10, 0, 0)
         )
@@ -386,7 +414,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_timestamp(
                 True,
-                BooleanType()
+                BooleanType(),
+                options=BASE_OPTIONS
             ),
             datetime.datetime(1970, 1, 1, 1, 0, 1, 0)
         )
@@ -395,7 +424,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_timestamp(
                 86400 * 365,
-                IntegerType()
+                IntegerType(),
+                options=BASE_OPTIONS
             ),
             datetime.datetime(1971, 1, 1, 1, 0, 0, 0)
         )
@@ -404,7 +434,8 @@ class CastTests(TestCase):
         self.assertEqual(
             cast_to_timestamp(
                 147.58,
-                DecimalType()
+                DecimalType(),
+                options=BASE_OPTIONS
             ),
             datetime.datetime(1970, 1, 1, 1, 2, 27, 580000)
         )
@@ -414,7 +445,8 @@ class CastTests(TestCase):
             cast_to_decimal(
                 datetime.date(2019, 8, 28),
                 DateType(),
-                DecimalType()
+                DecimalType(),
+                options=BASE_OPTIONS
             ),
             None
         )
@@ -424,7 +456,8 @@ class CastTests(TestCase):
             cast_to_decimal(
                 datetime.datetime(2019, 8, 28),
                 TimestampType(),
-                DecimalType()
+                DecimalType(),
+                options=BASE_OPTIONS
             ),
             1566943200.0
         )
@@ -434,7 +467,8 @@ class CastTests(TestCase):
             cast_to_decimal(
                 datetime.datetime(2019, 8, 28),
                 TimestampType(),
-                DecimalType(precision=10, scale=1)
+                DecimalType(precision=10, scale=1),
+                options=BASE_OPTIONS
             ),
             None
         )
@@ -444,7 +478,8 @@ class CastTests(TestCase):
             cast_to_decimal(
                 datetime.datetime(2019, 8, 28),
                 TimestampType(),
-                DecimalType(precision=11, scale=1)
+                DecimalType(precision=11, scale=1),
+                options=BASE_OPTIONS
             ),
             1566943200.0
         )
@@ -454,7 +489,8 @@ class CastTests(TestCase):
             cast_to_decimal(
                 10.123456789,
                 FloatType(),
-                DecimalType(precision=10, scale=8)
+                DecimalType(precision=10, scale=8),
+                options=BASE_OPTIONS
             ),
             10.12345679
         )
@@ -464,7 +500,8 @@ class CastTests(TestCase):
             cast_to_decimal(
                 10.987654321,
                 FloatType(),
-                DecimalType(precision=10, scale=8)
+                DecimalType(precision=10, scale=8),
+                options=BASE_OPTIONS
             ),
             10.98765432
         )
@@ -475,10 +512,12 @@ class CastTests(TestCase):
                 cast_to_decimal(
                     1.526,
                     FloatType(),
-                    DecimalType(scale=2)
+                    DecimalType(scale=2),
+                    options=BASE_OPTIONS
                 ),
                 DecimalType(scale=2),
-                DecimalType(scale=3)
+                DecimalType(scale=3),
+                options=BASE_OPTIONS
             ),
             1.53
         )
@@ -488,7 +527,8 @@ class CastTests(TestCase):
             cast_to_array(
                 [1, 2, None, 4],
                 ArrayType(ByteType()),
-                ArrayType(StringType())
+                ArrayType(StringType()),
+                options=BASE_OPTIONS
             ),
             ['1', '2', None, '4']
         )
@@ -498,7 +538,8 @@ class CastTests(TestCase):
             cast_to_map(
                 {1: "1", 2: "2"},
                 MapType(ByteType(), StringType()),
-                MapType(StringType(), FloatType())
+                MapType(StringType(), FloatType()),
+                options=BASE_OPTIONS
             ),
             {'1': 1.0, '2': 2.0}
         )
@@ -518,7 +559,8 @@ class CastTests(TestCase):
                     StructField("day", IntegerType()),
                     StructField("month", IntegerType()),
                     StructField("year", IntegerType()),
-                ])
+                ]),
+                options=BASE_OPTIONS
             ),
             Row(character='Alice', day=28, month=8, year=2019),
         )
