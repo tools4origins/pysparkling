@@ -573,8 +573,10 @@ def get_json_encoder(options):
     :param timestamp_formatter: a function that convert a timestamp into a string
     :return: type
     """
-    date_formatter = get_time_formatter(options.get("dateformat", "yyyy-MM-dd"))
-    timestamp_formatter = get_time_formatter(options.get("timestampformat", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"))
+    date_format = options.get("dateformat", "yyyy-MM-dd")
+    timestamp_format = options.get("timestampformat", "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+    date_formatter = get_time_formatter(date_format)
+    timestamp_formatter = get_time_formatter(timestamp_format)
 
     class CustomJSONEncoder(json.JSONEncoder):
         def encode(self, o):
