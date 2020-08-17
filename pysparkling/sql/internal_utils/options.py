@@ -22,6 +22,7 @@ class Options(dict):
         d = {
             key.lower(): value
             for arg in args
+            if arg is not None
             for key, value in arg.items()
         }
         d.update({
