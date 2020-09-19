@@ -36,7 +36,7 @@ setup(
         'pandas': ['pandas>=0.23.2'],
         'performance': ['matplotlib>=1.5.3'],
         'streaming': ['tornado>=4.3'],
-        'dev': ['antlr4-python3-runtime>=4.8,<5.0'],
+        'dev': ['antlr4-python3-runtime==4.7.1'],
         'test': [
             'backports.tempfile==1.0rc1',
             'cloudpickle>=0.1.0',
