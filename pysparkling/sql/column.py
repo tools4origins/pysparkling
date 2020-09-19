@@ -512,8 +512,8 @@ class Column(object):
         if isinstance(dataType, str):
             # Top level import would cause cyclic dependencies
             # pylint: disable=import-outside-toplevel
-            from pysparkling.sql.ast.ast_to_python import string_to_type
-            dataType = string_to_type(dataType)
+            from pysparkling.sql.ast.ast_to_python import parse_data_type
+            dataType = parse_data_type(dataType)
         elif not isinstance(dataType, DataType):
             raise NotImplementedError("Unknown cast type: {}".format(dataType))
 
