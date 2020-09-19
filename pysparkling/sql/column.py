@@ -8,7 +8,7 @@ from pysparkling.sql.expressions.operators import Negate, Add, Minus, Time, Divi
     EndsWith, Substring, IsIn, Alias, Cast
 from pysparkling.sql.expressions.orders import DescNullsLast, DescNullsFirst, Desc, \
     AscNullsLast, AscNullsFirst, Asc, SortOrder
-from pysparkling.sql.types import string_to_type, DataType, StructField
+from pysparkling.sql.types import DataType, StructField
 from pysparkling.sql.utils import IllegalArgumentException, AnalysisException
 
 
@@ -511,6 +511,9 @@ class Column(object):
         """
 
         if isinstance(dataType, str):
+            # Top level import would cause cyclic dependencies
+            # pylint: disable=import-outside-toplevel
+            from pysparkling.sql.ast.ast_to_python import string_to_type
             dataType = string_to_type(dataType)
         elif not isinstance(dataType, DataType):
             raise NotImplementedError("Unknown cast type: {}".format(dataType))
