@@ -44,6 +44,7 @@ setup(
             'pylint>=2.3,<2.6',
             'memory-profiler>=0.47',
             'pytest',
+            'parameterized>=0.7.4',
             'tornado>=4.3',
         ]
     },
