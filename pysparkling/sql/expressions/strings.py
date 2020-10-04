@@ -1,6 +1,6 @@
 import string
 
-from pysparkling.sql.expressions.expressions import Expression, UnaryExpression
+from pysparkling.sql.expressions.expressions import UnaryExpression, Expression
 from pysparkling.sql.types import StringType
 from pysparkling.utils import levenshtein_distance
 
@@ -229,7 +229,6 @@ class SoundEx(UnaryExpression):
 
     def __str__(self):
         return "soundex({0})".format(self.column)
-
 
 
 __all__ = [

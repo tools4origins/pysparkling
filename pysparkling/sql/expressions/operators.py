@@ -1,7 +1,8 @@
+from pysparkling import Row
 from pysparkling.sql.casts import get_caster
 from pysparkling.sql.expressions.expressions import Expression, UnaryExpression, \
     NullSafeBinaryOperation, TypeSafeBinaryOperation
-from pysparkling.sql.types import StructType, Row
+from pysparkling.sql.types import StructType
 
 
 class Negate(UnaryExpression):
@@ -286,6 +287,14 @@ class IsNotNull(UnaryExpression):
         return "({0} IS NOT NULL)".format(self.column)
 
 
+class IsNull(UnaryExpression):
+    def eval(self, row, schema):
+        return self.column.eval(row, schema) is None
+
+    def __str__(self):
+        return "({0} IS NULL)".format(self.column)
+
+
 class Cast(Expression):
     def __init__(self, column, destination_type):
         super(Cast, self).__init__(column)
@@ -314,14 +323,6 @@ class Substring(Expression):
 
     def __str__(self):
         return "substring({0}, {1}, {2})".format(self.expr, self.start, self.length)
-
-
-class IsNull(UnaryExpression):
-    def eval(self, row, schema):
-        return self.column.eval(row, schema) is None
-
-    def __str__(self):
-        return "({0} IS NULL)".format(self.column)
 
 
 class Alias(Expression):

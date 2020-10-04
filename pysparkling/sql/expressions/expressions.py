@@ -112,6 +112,9 @@ class Expression(object):
             elif isinstance(child, (list, set, tuple)):
                 Expression.children_initialize(child, partition_index)
 
+    def initialize(self, partition_index):
+        pass
+
     # Adding information about the schema that was defined in the step prior the evaluation
     def with_pre_evaluation_schema(self, schema):
         self.pre_evaluation_schema = schema
@@ -132,9 +135,6 @@ class Expression(object):
                 child.expr.recursive_pre_evaluation_schema(schema)
             elif isinstance(child, (list, set, tuple)):
                 Expression.children_pre_evaluation_schema(child, schema)
-
-    def initialize(self, partition_index):
-        pass
 
 
 class UnaryExpression(Expression):

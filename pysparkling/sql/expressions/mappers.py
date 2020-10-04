@@ -4,14 +4,11 @@ import random
 import re
 import string
 
-from pysparkling.sql.types import StringType, create_row
-
+from pysparkling.sql.expressions.expressions import Expression, NullSafeColumnOperation, UnaryExpression
 from pysparkling.sql.internal_utils.column import resolve_column
-from pysparkling.sql.expressions.expressions import Expression, UnaryExpression, \
-    NullSafeColumnOperation
+from pysparkling.sql.types import create_row, StringType
 from pysparkling.sql.utils import AnalysisException
-from pysparkling.utils import XORShiftRandom, MonotonicallyIncreasingIDGenerator, \
-    half_even_round, half_up_round
+from pysparkling.utils import XORShiftRandom, half_up_round, half_even_round, MonotonicallyIncreasingIDGenerator
 
 
 class StarOperator(Expression):
@@ -229,7 +226,7 @@ class NaNvl(Expression):
     def eval(self, row, schema):
         nan = float("nan")
         col1_value = self.col1.eval(row, schema)
-        if col1_value != nan:
+        if col1_value is not nan:
             return float(col1_value)
         return float(self.col2.eval(row, schema))
 
