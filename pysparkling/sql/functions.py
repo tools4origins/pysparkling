@@ -633,60 +633,60 @@ def var_pop(e):
 # // Window functions
 # //////////////////////////////////////////////////////////////////////////////////////////////
 
-# def cume_dist():
-#     """
-#     :rtype: Column
-#     """
-#     return
-#
-#
-# def dense_rank():
-#     """
-#     :rtype: Column
-#     """
-#     return
-#
-#
-# def lag(e, offset, defaultValue=None):
-#     """
-#     :rtype: Column
-#     """
-#     return
-#
-#
-# def lead(e, offset, defaultValue=None):
-#     """
-#     :rtype: Column
-#     """
-#     return
-#
-#
-# def ntile(n):
-#     """
-#     :rtype: Column
-#     """
-#     return
-#
-#
-# def percent_rank():
-#     """
-#     :rtype: Column
-#     """
-#     return
-#
-#
-# def rank():
-#     """
-#     :rtype: Column
-#     """
-#     return
-#
-#
-# def row_number():
-#     """
-#     :rtype: Column
-#     """
-#     return
+def cume_dist():
+    """
+    :rtype: Column
+    """
+    raise NotImplementedError("window functions are not yet supported by pysparkling")
+
+
+def dense_rank():
+    """
+    :rtype: Column
+    """
+    raise NotImplementedError("window functions are not yet supported by pysparkling")
+
+
+def lag(e, offset, defaultValue=None):
+    """
+    :rtype: Column
+    """
+    raise NotImplementedError("window functions are not yet supported by pysparkling")
+
+
+def lead(e, offset, defaultValue=None):
+    """
+    :rtype: Column
+    """
+    raise NotImplementedError("window functions are not yet supported by pysparkling")
+
+
+def ntile(n):
+    """
+    :rtype: Column
+    """
+    raise NotImplementedError("window functions are not yet supported by pysparkling")
+
+
+def percent_rank():
+    """
+    :rtype: Column
+    """
+    raise NotImplementedError("window functions are not yet supported by pysparkling")
+
+
+def rank():
+    """
+    :rtype: Column
+    """
+    raise NotImplementedError("window functions are not yet supported by pysparkling")
+
+
+def row_number():
+    """
+    :rtype: Column
+    """
+    raise NotImplementedError("window functions are not yet supported by pysparkling")
 
 
 def create_map(*exprs):
