@@ -1,4 +1,3 @@
-import sys
 from pysparkling import RDD
 from pysparkling.sql.dataframe import DataFrame
 from pysparkling.sql.internal_utils.readers import InternalReader
@@ -11,9 +10,6 @@ DATA_WRITERS = dict(
     csv=CSVWriter,
     json=JSONWriter,
 )
-
-if sys.version >= '3':
-    basestring = unicode = str
 
 
 class DataFrameReader(OptionUtils):
@@ -56,7 +52,7 @@ class DataFrameReader(OptionUtils):
             charToEscapeQuoteEscaping=charToEscapeQuoteEscaping, samplingRatio=samplingRatio,
             enforceSchema=enforceSchema, emptyValue=emptyValue, locale=locale, lineSep=lineSep
         )
-        if isinstance(path, basestring):
+        if isinstance(path, str):
             path = [path]
         if isinstance(path, list):
             return self._df(self._jreader.csv(path))
@@ -81,7 +77,7 @@ class DataFrameReader(OptionUtils):
             allowUnquotedControlChars=allowUnquotedControlChars, lineSep=lineSep,
             samplingRatio=samplingRatio, dropFieldIfAllNull=dropFieldIfAllNull, encoding=encoding,
             locale=locale)
-        if isinstance(path, basestring):
+        if isinstance(path, str):
             path = [path]
         if isinstance(path, list):
             return self._df(self._jreader.json(path))
@@ -95,7 +91,7 @@ class DataFrameReader(OptionUtils):
                        lineSep=lineSep,
                        pathGlobFilter=pathGlobFilter,
                        recursiveFileLookup=recursiveFileLookup)
-        if isinstance(paths, basestring):
+        if isinstance(paths, str):
             paths = [paths]
         if isinstance(paths, list):
             return self._df(self._jreader.text(paths))
@@ -154,7 +150,7 @@ class DataFrameWriter(OptionUtils):
         else:
             cols = [col] + list(cols)
 
-        if not all(isinstance(c, basestring) for c in cols):
+        if not all(isinstance(c, str) for c in cols):
             raise TypeError("all names should be `str`")
 
         self._jwrite = self._jwrite.bucketBy(numBuckets, *cols)
@@ -167,7 +163,7 @@ class DataFrameWriter(OptionUtils):
 
             col, cols = col[0], col[1:]
 
-        if not all(isinstance(c, basestring) for c in cols) or not isinstance(col, basestring):
+        if not all(isinstance(c, str) for c in cols) or not isinstance(col, str):
             raise TypeError("all names should be `str`")
 
         self._jwrite = self._jwrite.sortBy(col, *cols)
