@@ -585,10 +585,6 @@ class DataFrame(object):
     def columns(self):
         return [f.name for f in self.schema.fields]
 
-    def colRegex(self, colName):
-        if not isinstance(colName, str):
-            raise ValueError("colName should be provided as string")
-
     def alias(self, alias):
         assert isinstance(alias, str), "alias should be a string"
         raise NotImplementedError("Pysparkling does not currently support SQL catalog")
