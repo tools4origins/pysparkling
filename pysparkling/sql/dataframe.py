@@ -1,16 +1,14 @@
 import warnings
 
-from pysparkling.sql.internals import InternalGroupedDataFrame, ROLLUP_TYPE, CUBE_TYPE
-from pysparkling.sql.internal_utils.joins import JOIN_TYPES, CROSS_JOIN
-from pysparkling.sql.utils import IllegalArgumentException, require_minimum_pandas_version, \
-    AnalysisException
-from pysparkling.storagelevel import StorageLevel
-# noinspection PyProtectedMember
-from pysparkling.sql.types import TimestampType, IntegralType, ByteType, ShortType, \
-    IntegerType, FloatType, _check_series_convert_timestamps_local_tz
-
-from pysparkling.sql.column import Column, parse
+from pysparkling import StorageLevel
+from pysparkling.sql.column import parse, Column
 from pysparkling.sql.expressions.fields import FieldAsExpression
+from pysparkling.sql.internal_utils.joins import JOIN_TYPES, CROSS_JOIN
+from pysparkling.sql.internals import InternalGroupedDataFrame, ROLLUP_TYPE, CUBE_TYPE
+from pysparkling.sql.types import ByteType, ShortType, IntegerType, FloatType, IntegralType, \
+    TimestampType, _check_series_convert_timestamps_local_tz
+from pysparkling.sql.utils import IllegalArgumentException, AnalysisException, \
+    require_minimum_pandas_version
 
 _NoValue = object()
 

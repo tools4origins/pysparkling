@@ -6,22 +6,20 @@ from collections import Counter
 from copy import deepcopy
 from functools import partial
 
-from pysparkling.sql.internal_utils.joins import CROSS_JOIN, LEFT_JOIN, RIGHT_JOIN, FULL_JOIN, \
-    INNER_JOIN, LEFT_ANTI_JOIN, LEFT_SEMI_JOIN
-from pysparkling.sql.utils import IllegalArgumentException
-from pysparkling.storagelevel import StorageLevel
-
-from pysparkling.sql.types import Row, StructField, LongType, StructType, StringType, DataType, \
-    row_from_keyed_values, create_row
-
+from pysparkling import StorageLevel
+from pysparkling.sql.functions import array, map_from_arrays, lit, rand, count, struct, collect_set
 from pysparkling.sql.internal_utils.column import resolve_column
-from pysparkling.sql.functions import parse, count, lit, struct, rand, map_from_arrays, array, \
-    collect_set
-from pysparkling.sql.schema_utils import merge_schemas, get_schema_from_cols, infer_schema_from_rdd
+from pysparkling.sql.internal_utils.joins import CROSS_JOIN, LEFT_JOIN, RIGHT_JOIN, \
+    FULL_JOIN, INNER_JOIN, LEFT_ANTI_JOIN, LEFT_SEMI_JOIN
+from pysparkling.sql.schema_utils import infer_schema_from_rdd, get_schema_from_cols, merge_schemas
+from pysparkling.sql.types import StructType, create_row, row_from_keyed_values, StructField, \
+    StringType, DataType, Row, LongType
+from pysparkling.sql.column import parse
+from pysparkling.sql.utils import IllegalArgumentException
 from pysparkling.stat_counter import RowStatHelper, CovarianceCounter
-from pysparkling.utils import reservoir_sample_and_size, compute_weighted_percentiles, \
-    get_keyfunc, str_half_width, pad_cell, merge_rows_joined_on_values, \
-    format_cell, portable_hash, merge_rows
+from pysparkling.utils import get_keyfunc, compute_weighted_percentiles, \
+    reservoir_sample_and_size, pad_cell, str_half_width, format_cell, merge_rows, \
+    merge_rows_joined_on_values, portable_hash
 
 
 class FieldIdGenerator(object):
