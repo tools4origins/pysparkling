@@ -218,7 +218,7 @@ def approx_count_distinct(e, rsd=0.05):
     +------------------------+
     """
     # NB: This function returns the exact number of distinct values in pysparkling
-    # as it does not rely on HyperLogLogPlusPlus or an other estimator
+    # as it does not rely on HyperLogLogPlusPlus or another estimator
     return col(ApproxCountDistinct(column=parse(e)))
 
 
@@ -246,13 +246,6 @@ def collect_list(e):
     return col(CollectList(column=parse(e)))
 
 
-def collect_set(e):
-    """
-    :rtype: Column
-    """
-    return col(CollectSet(column=parse(e)))
-
-
 def corr(column1, column2):
     """
     :rtype: Column
@@ -261,6 +254,126 @@ def corr(column1, column2):
         column1=parse(column1),
         column2=parse(column2)
     ))
+
+
+def when(condition, value):
+    """
+    >>> from pysparkling import Context, Row
+    >>> from pysparkling.sql.session import SparkSession
+    >>> spark = SparkSession(Context())
+    >>> df = spark.createDataFrame(
+    ...    [Row(age=2, name='Alice'), Row(age=5, name='Bob'), Row(age=4, name='Lisa')]
+    ... )
+    >>> df.select(df.name, when(df.age > 4, -1).when(df.age < 3, 1).otherwise(0)).show()
+    +-----+------------------------------------------------------------+
+    | name|CASE WHEN (age > 4) THEN -1 WHEN (age < 3) THEN 1 ELSE 0 END|
+    +-----+------------------------------------------------------------+
+    |Alice|                                                           1|
+    |  Bob|                                                          -1|
+    | Lisa|                                                           0|
+    +-----+------------------------------------------------------------+
+
+    :rtype: Column
+    """
+    return col(CaseWhen([parse(condition)], [parse(value)]))
+
+
+def rand(seed=None):
+    """
+
+    :rtype: Column
+
+    >>> from pysparkling import Context, Row
+    >>> from pysparkling.sql.session import SparkSession
+    >>> spark = SparkSession(Context())
+    >>> df = spark.range(4, numPartitions=2)
+    >>> df.select((rand(seed=42) * 3).alias("rand")).show()
+    +------------------+
+    |              rand|
+    +------------------+
+    |2.3675439190260485|
+    |1.8992753422855404|
+    |1.5878851952491426|
+    |0.8800146499990725|
+    +------------------+
+    """
+    return col(Rand(seed))
+
+
+def randn(seed=None):
+    """
+
+    :rtype: Column
+
+    >>> from pysparkling import Context, Row
+    >>> from pysparkling.sql.session import SparkSession
+    >>> spark = SparkSession(Context())
+    >>> df = spark.range(4, numPartitions=2)
+    >>> df.select((randn(seed=42) * 3).alias("randn")).show()
+    +------------------+
+    |             randn|
+    +------------------+
+    | 3.662337823324239|
+    |1.6855413955465237|
+    |0.7870748709777542|
+    |-5.552412872005739|
+    +------------------+
+    """
+    return col(Randn(seed))
+
+
+def struct(*exprs):
+    """
+    :rtype: Column
+
+    >>> from pysparkling import Context, Row
+    >>> from pysparkling.sql.session import SparkSession
+    >>> spark = SparkSession(Context())
+    >>> df = spark.createDataFrame([Row(age=2, name='Alice'), Row(age=5, name='Bob')])
+    >>> df.select(struct("age", col("name")).alias("struct")).collect()
+    [Row(struct=Row(age=2, name='Alice')), Row(struct=Row(age=5, name='Bob'))]
+    >>> df.select(struct("age", col("name"))).show()
+    +----------------------------------+
+    |named_struct(age, age, name, name)|
+    +----------------------------------+
+    |                        [2, Alice]|
+    |                          [5, Bob]|
+    +----------------------------------+
+
+    """
+    cols = [parse(e) for e in exprs]
+    return col(CreateStruct(cols))
+
+
+def array(*exprs):
+    """
+    :rtype: Column
+    """
+    columns = [parse(e) for e in exprs]
+    return col(ArrayColumn(columns))
+
+
+def map_from_arrays(col1, col2):
+    """Creates a new map from two arrays.
+
+    :param col1: name of column containing a set of keys. All elements should not be null
+    :param col2: name of column containing a set of values
+    :rtype: Column
+
+    >>> from pysparkling import Context, Row
+    >>> from pysparkling.sql.session import SparkSession
+    >>> spark = SparkSession(Context())
+    >>> df = spark.createDataFrame([([2, 5], ['a', 'b'])], ['k', 'v'])
+    >>> df.select(map_from_arrays(df.k, df.v).alias("map")).show()
+    +----------------+
+    |             map|
+    +----------------+
+    |[2 -> a, 5 -> b]|
+    +----------------+
+    """
+    key_col = parse(col1)
+    value_col = parse(col2)
+    return col(MapFromArraysColumn(key_col, value_col))
 
 
 def count(e):
@@ -288,6 +401,13 @@ def countDistinct(*exprs):
     return col(CountDistinct(columns=columns))
 
 
+def collect_set(e):
+    """
+    :rtype: Column
+    """
+    return col(CollectSet(column=parse(e)))
+
+
 def covar_pop(column1, column2):
     """
     :rtype: Column
@@ -313,6 +433,13 @@ def first(e, ignoreNulls=False):
     :rtype: Column
     """
     return col(First(parse(e), ignoreNulls))
+
+
+def last(e, ignoreNulls=False):
+    """
+    :rtype: Column
+    """
+    return col(Last(parse(e), ignoreNulls))
 
 
 def grouping(e):
@@ -397,13 +524,6 @@ def kurtosis(e):
     :rtype: Column
     """
     return col(Kurtosis(column=parse(e)))
-
-
-def last(e, ignoreNulls=False):
-    """
-    :rtype: Column
-    """
-    return col(Last(parse(e), ignoreNulls))
 
 
 # noinspection PyShadowingBuiltins
@@ -569,14 +689,6 @@ def var_pop(e):
 #     return
 
 
-def array(*exprs):
-    """
-    :rtype: Column
-    """
-    columns = [parse(e) for e in exprs]
-    return col(ArrayColumn(columns))
-
-
 def create_map(*exprs):
     """Creates a new map column.
 
@@ -599,29 +711,6 @@ def create_map(*exprs):
     cols = [parse(e) for e in exprs]
 
     return col(MapColumn(cols))
-
-
-def map_from_arrays(col1, col2):
-    """Creates a new map from two arrays.
-
-    :param col1: name of column containing a set of keys. All elements should not be null
-    :param col2: name of column containing a set of values
-    :rtype: Column
-
-    >>> from pysparkling import Context, Row
-    >>> from pysparkling.sql.session import SparkSession
-    >>> spark = SparkSession(Context())
-    >>> df = spark.createDataFrame([([2, 5], ['a', 'b'])], ['k', 'v'])
-    >>> df.select(map_from_arrays(df.k, df.v).alias("map")).show()
-    +----------------+
-    |             map|
-    +----------------+
-    |[2 -> a, 5 -> b]|
-    +----------------+
-    """
-    key_col = parse(col1)
-    value_col = parse(col2)
-    return col(MapFromArraysColumn(key_col, value_col))
 
 
 def broadcast(df):
@@ -700,50 +789,6 @@ def nanvl(col1, col2):
     return col(NaNvl(parse(col1), parse(col2)))
 
 
-def rand(seed=None):
-    """
-
-    :rtype: Column
-
-    >>> from pysparkling import Context, Row
-    >>> from pysparkling.sql.session import SparkSession
-    >>> spark = SparkSession(Context())
-    >>> df = spark.range(4, numPartitions=2)
-    >>> df.select((rand(seed=42) * 3).alias("rand")).show()
-    +------------------+
-    |              rand|
-    +------------------+
-    |2.3675439190260485|
-    |1.8992753422855404|
-    |1.5878851952491426|
-    |0.8800146499990725|
-    +------------------+
-    """
-    return col(Rand(seed))
-
-
-def randn(seed=None):
-    """
-
-    :rtype: Column
-
-    >>> from pysparkling import Context, Row
-    >>> from pysparkling.sql.session import SparkSession
-    >>> spark = SparkSession(Context())
-    >>> df = spark.range(4, numPartitions=2)
-    >>> df.select((randn(seed=42) * 3).alias("randn")).show()
-    +------------------+
-    |             randn|
-    +------------------+
-    | 3.662337823324239|
-    |1.6855413955465237|
-    |0.7870748709777542|
-    |-5.552412872005739|
-    +------------------+
-    """
-    return col(Randn(seed))
-
-
 def spark_partition_id():
     """
     :rtype: Column
@@ -756,51 +801,6 @@ def sqrt(e):
     :rtype: Column
     """
     return col(Sqrt(parse(e)))
-
-
-def struct(*exprs):
-    """
-    :rtype: Column
-
-    >>> from pysparkling import Context, Row
-    >>> from pysparkling.sql.session import SparkSession
-    >>> spark = SparkSession(Context())
-    >>> df = spark.createDataFrame([Row(age=2, name='Alice'), Row(age=5, name='Bob')])
-    >>> df.select(struct("age", col("name")).alias("struct")).collect()
-    [Row(struct=Row(age=2, name='Alice')), Row(struct=Row(age=5, name='Bob'))]
-    >>> df.select(struct("age", col("name"))).show()
-    +----------------------------------+
-    |named_struct(age, age, name, name)|
-    +----------------------------------+
-    |                        [2, Alice]|
-    |                          [5, Bob]|
-    +----------------------------------+
-
-    """
-    cols = [parse(e) for e in exprs]
-    return col(CreateStruct(cols))
-
-
-def when(condition, value):
-    """
-    >>> from pysparkling import Context, Row
-    >>> from pysparkling.sql.session import SparkSession
-    >>> spark = SparkSession(Context())
-    >>> df = spark.createDataFrame(
-    ...    [Row(age=2, name='Alice'), Row(age=5, name='Bob'), Row(age=4, name='Lisa')]
-    ... )
-    >>> df.select(df.name, when(df.age > 4, -1).when(df.age < 3, 1).otherwise(0)).show()
-    +-----+------------------------------------------------------------+
-    | name|CASE WHEN (age > 4) THEN -1 WHEN (age < 3) THEN 1 ELSE 0 END|
-    +-----+------------------------------------------------------------+
-    |Alice|                                                           1|
-    |  Bob|                                                          -1|
-    | Lisa|                                                           0|
-    +-----+------------------------------------------------------------+
-
-    :rtype: Column
-    """
-    return col(CaseWhen([parse(condition)], [parse(value)]))
 
 
 def bitwiseNOT(e):
