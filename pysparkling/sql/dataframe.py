@@ -1,4 +1,3 @@
-import sys
 import warnings
 
 from pysparkling.sql.internals import InternalGroupedDataFrame, ROLLUP_TYPE, CUBE_TYPE
@@ -13,25 +12,13 @@ from pysparkling.sql.types import TimestampType, IntegralType, ByteType, ShortTy
 from pysparkling.sql.column import Column, parse
 from pysparkling.sql.expressions.fields import FieldAsExpression
 
-if sys.version >= '3':
-    basestring = str
-    long = int
-
 _NoValue = object()
 
 
-# noinspection PyMethodMayBeStatic
 class DataFrame(object):
     def __init__(self, jdf, sql_ctx):
         self._jdf = jdf
         self.sql_ctx = sql_ctx
-        # noinspection PyProtectedMember
-        self._sc = sql_ctx and sql_ctx._sc
-        self._schema = None  # initialized lazily
-
-        # Check whether _repr_html is supported or not, we use it to avoid calling _jdf twice
-        # by __repr__ and _repr_html_ while eager evaluation opened.
-        self._support_repr_html = False
 
     @property
     def rdd(self):
@@ -135,7 +122,7 @@ class DataFrame(object):
         return True
 
     def isStreaming(self):
-        # pylint: disable=W0511
+        # pylint: disable=fixme
         # todo: Add support of streaming
         return False
 
@@ -143,6 +130,7 @@ class DataFrame(object):
         """
         >>> from pysparkling import Context, Row
         >>> from pysparkling.sql.session import SparkSession
+        >>> from pysparkling.sql.functions import col
         >>> spark = SparkSession(Context())
         >>> df = spark.createDataFrame(
         ...   [Row(age=5, name='Bob'), Row(age=2, name='Alice')]
@@ -217,7 +205,7 @@ class DataFrame(object):
         if not isinstance(name, str):
             raise TypeError("name should be provided as str, got {0}".format(type(name)))
 
-        allowed_types = (basestring, list, float, int)
+        allowed_types = (str, list, float, int)
         for p in parameters:
             if not isinstance(p, allowed_types):
                 raise TypeError(
@@ -457,7 +445,7 @@ class DataFrame(object):
             cols = [parse(col) for col in cols]
             repartitioned_jdf = self._jdf.repartition(numPartitions, cols)
             return DataFrame(repartitioned_jdf, self.sql_ctx)
-        if isinstance(numPartitions, (basestring, Column)):
+        if isinstance(numPartitions, (str, Column)):
             return self.repartition(200, numPartitions, *cols)
         raise TypeError("numPartitions should be an int, str or Column")
 
@@ -492,7 +480,7 @@ class DataFrame(object):
         [Row(v=4)]
 
         """
-        # pylint: disable=W0511
+        # pylint: disable=fixme
         # todo: support sort orders and assume "ascending nulls first" if needed
         if isinstance(numPartitions, int):
             if not cols:
@@ -500,7 +488,7 @@ class DataFrame(object):
             cols = [parse(col) for col in cols]
             repartitioned_jdf = self._jdf.repartitionByRange(numPartitions, *cols)
             return DataFrame(repartitioned_jdf, self.sql_ctx)
-        if isinstance(numPartitions, (basestring, Column)):
+        if isinstance(numPartitions, (str, Column)):
             return self.repartitionByRange(200, numPartitions, *cols)
         raise TypeError("numPartitions should be an int, str or Column")
 
@@ -531,7 +519,7 @@ class DataFrame(object):
             fraction = withReplacement
             withReplacement = None
 
-        seed = long(seed) if seed is not None else None
+        seed = int(seed) if seed is not None else None
         args = [arg for arg in [withReplacement, fraction, seed] if arg is not None]
         jdf = self._jdf.sample(*args)
         return DataFrame(jdf, self.sql_ctx)
@@ -587,7 +575,7 @@ class DataFrame(object):
         for w in weights:
             if w < 0.0:
                 raise ValueError("Weights must be positive. Found weight value: {}".format(w))
-        seed = long(seed) if seed is not None else None
+        seed = int(seed) if seed is not None else None
         rdd_array = self._jdf.randomSplit(weights, seed)
         return [DataFrame(rdd, self.sql_ctx) for rdd in rdd_array]
 
@@ -604,7 +592,7 @@ class DataFrame(object):
             raise ValueError("colName should be provided as string")
 
     def alias(self, alias):
-        assert isinstance(alias, basestring), "alias should be a string"
+        assert isinstance(alias, str), "alias should be a string"
         raise NotImplementedError("Pysparkling does not currently support SQL catalog")
 
     def crossJoin(self, other):
@@ -832,8 +820,6 @@ class DataFrame(object):
     def _sort_cols(cols, kwargs):
         """ Return a list of Columns that describes the sort order
         """
-        # pylint: disable=W0511
-        # todo: use this function in sort methods to add support of custom orders
         if not cols:
             raise ValueError("should sort by at least one column")
         if len(cols) == 1 and isinstance(cols[0], list):
@@ -970,7 +956,7 @@ class DataFrame(object):
         return self.head()
 
     def __getitem__(self, item):
-        if isinstance(item, basestring):
+        if isinstance(item, str):
             return getattr(self, item)
         if isinstance(item, Column):
             return self.filter(item)
@@ -1100,14 +1086,13 @@ class DataFrame(object):
         """
         if len(expr) == 1 and isinstance(expr[0], list):
             expr = expr[0]
-        # pylint: disable=W0511
+        # pylint: disable=fixme
         # todo: handle expr like abs(age)
-        # with jdf = self._jdf.selectExpr(expr)
         jdf = self._jdf.select(*expr)
         return DataFrame(jdf, self.sql_ctx)
 
     def filter(self, condition):
-        if isinstance(condition, basestring):
+        if isinstance(condition, str):
             jdf = self._jdf.filter(parse(condition))
         elif isinstance(condition, Column):
             jdf = self._jdf.filter(condition)
@@ -1362,7 +1347,7 @@ class DataFrame(object):
 
         if subset is None:
             subset = self.columns
-        elif isinstance(subset, basestring):
+        elif isinstance(subset, str):
             subset = [subset]
         elif not isinstance(subset, (list, tuple)):
             raise ValueError("subset should be a list or tuple of column names")
@@ -1373,20 +1358,20 @@ class DataFrame(object):
         return DataFrame(self._jdf.dropna(thresh, subset), self.sql_ctx)
 
     def fillna(self, value, subset=None):
-        if not isinstance(value, (float, int, long, basestring, bool, dict)):
+        if not isinstance(value, (float, int, str, bool, dict)):
             raise ValueError("value should be a float, int, long, string, bool or dict")
 
         # Note that bool validates isinstance(int), but we don't want to
         # convert bools to floats
 
-        if not isinstance(value, bool) and isinstance(value, (int, long)):
+        if not isinstance(value, bool) and isinstance(value, int):
             value = float(value)
 
         if isinstance(value, dict):
             return DataFrame(self._jdf.fillna(value), self.sql_ctx)
         if subset is None:
             return DataFrame(self._jdf.fillna(value), self.sql_ctx)
-        if isinstance(subset, basestring):
+        if isinstance(subset, str):
             subset = [subset]
         elif not isinstance(subset, (list, tuple)):
             raise ValueError("subset should be a list or tuple of column names")
@@ -1402,13 +1387,13 @@ class DataFrame(object):
             return all_of_
 
         all_of_bool = all_of(bool)
-        all_of_str = all_of(basestring)
-        all_of_numeric = all_of((float, int, long))
+        all_of_str = all_of(str)
+        all_of_numeric = all_of((float, int))
 
         value = self._check_replace_inputs(subset, to_replace, value)
 
         # Reshape input arguments if necessary
-        if isinstance(to_replace, (float, int, long, basestring)):
+        if isinstance(to_replace, (float, int, str)):
             to_replace = [to_replace]
 
         if isinstance(to_replace, dict):
@@ -1416,11 +1401,11 @@ class DataFrame(object):
             if value is not None:
                 warnings.warn("to_replace is a dict and value is not None. value will be ignored.")
         else:
-            if isinstance(value, (float, int, long, basestring)) or value is None:
+            if isinstance(value, (float, int, str)) or value is None:
                 value = [value for _ in range(len(to_replace))]
             rep_dict = dict(zip(to_replace, value))
 
-        if isinstance(subset, basestring):
+        if isinstance(subset, str):
             subset = [subset]
 
         # Verify we were not passed in mixed type generics.
@@ -1441,7 +1426,7 @@ class DataFrame(object):
                 raise TypeError("value argument is required when to_replace is not a dictionary.")
 
         # Validate input types
-        valid_types = (bool, float, int, long, basestring, list, tuple)
+        valid_types = (bool, float, int, str, list, tuple)
         if not isinstance(to_replace, valid_types) and not isinstance(to_replace, dict):
             raise ValueError(
                 "to_replace should be a bool, float, int, long, string, list, tuple, or dict. "
@@ -1455,7 +1440,7 @@ class DataFrame(object):
             if len(to_replace) != len(value):
                 raise ValueError("to_replace and value lists should be of the same length. "
                                  "Got {0} and {1}".format(len(to_replace), len(value)))
-        if not (subset is None or isinstance(subset, (list, tuple, basestring))):
+        if not (subset is None or isinstance(subset, (list, tuple, str))):
             raise ValueError("subset should be a list or tuple of column names, "
                              "column name or None. Got {0}".format(type(subset)))
         return value
@@ -1478,10 +1463,10 @@ class DataFrame(object):
         >>> df.approxQuantile(["age"], [0.1, 0.5, 0.9], 1/1000)
         [[2.0, 2.0, 5.0]]
         """
-        if not isinstance(col, (basestring, list, tuple)):
+        if not isinstance(col, (str, list, tuple)):
             raise ValueError("col should be a string, list or tuple, but got %r" % type(col))
 
-        isStr = isinstance(col, basestring)
+        isStr = isinstance(col, str)
 
         if isinstance(col, tuple):
             col = list(col)
@@ -1489,7 +1474,7 @@ class DataFrame(object):
             col = [col]
 
         for c in col:
-            if not isinstance(c, basestring):
+            if not isinstance(c, str):
                 raise ValueError("columns should be strings, but got %r" % type(c))
 
         if not isinstance(probabilities, (list, tuple)):
@@ -1497,10 +1482,10 @@ class DataFrame(object):
         if isinstance(probabilities, tuple):
             probabilities = list(probabilities)
         for p in probabilities:
-            if not isinstance(p, (float, int, long)) or p < 0 or p > 1:
+            if not isinstance(p, (float, int)) or p < 0 or p > 1:
                 raise ValueError("probabilities should be numerical (float, int, long) in [0,1].")
 
-        if not isinstance(relativeError, (float, int, long)) or relativeError < 0:
+        if not isinstance(relativeError, (float, int)) or relativeError < 0:
             raise ValueError("relativeError should be numerical (float, int, long) >= 0.")
         relativeError = float(relativeError)
 
@@ -1516,9 +1501,9 @@ class DataFrame(object):
         >>> spark.range(50).corr('id', 'id')
         1.0
         """
-        if not isinstance(col1, basestring):
+        if not isinstance(col1, str):
             raise ValueError("col1 should be a string.")
-        if not isinstance(col2, basestring):
+        if not isinstance(col2, str):
             raise ValueError("col2 should be a string.")
         if not method:
             method = "pearson"
@@ -1535,20 +1520,16 @@ class DataFrame(object):
         >>> spark.range(50).cov('id', 'id')
         212.5
         """
-        if not isinstance(col1, basestring):
+        if not isinstance(col1, str):
             raise ValueError("col1 should be a string.")
-        if not isinstance(col2, basestring):
+        if not isinstance(col2, str):
             raise ValueError("col2 should be a string.")
         return self._jdf.cov(col1, col2)
 
     def crosstab(self, col1, col2):
-        # pylint: disable=W0511
-        # todo: extra workin here
-        # pylint: disable=W0511
-        # todo: tests on schema
-        if not isinstance(col1, basestring):
+        if not isinstance(col1, str):
             raise ValueError("col1 should be a string.")
-        if not isinstance(col2, basestring):
+        if not isinstance(col2, str):
             raise ValueError("col2 should be a string.")
         return DataFrame(self._jdf.crosstab(self, col1, col2), self.sql_ctx)
 
@@ -1614,13 +1595,13 @@ class DataFrame(object):
         """
         if len(cols) == 1:
             col = cols[0]
-            if isinstance(col, (basestring, Column)):
+            if isinstance(col, (str, Column)):
                 jdf = self._jdf.drop([col])
             else:
                 raise TypeError("col should be a string or a Column")
         else:
             for col in cols:
-                if not isinstance(col, basestring):
+                if not isinstance(col, str):
                     raise TypeError("each col in the param list should be a string")
             jdf = self._jdf.drop(cols)
 
@@ -1670,7 +1651,7 @@ class DataFrame(object):
         else:
             timezone = None
 
-        # pylint: disable=W0511
+        # pylint: disable=fixme
         # todo: Handle sql_ctx_conf.arrowEnabled()
         # Below is toPandas without Arrow optimization.
         pdf = pd.DataFrame.from_records(self.collect(), columns=self.columns)
@@ -1694,7 +1675,7 @@ class DataFrame(object):
             return pdf
 
         for field in self.schema:
-            # pylint: disable=W0511
+            # pylint: disable=fixme
             # TODO: handle nested timestamps, such as ArrayType(TimestampType())?
             if isinstance(field.dataType, TimestampType):
                 pdf[field.name] = \

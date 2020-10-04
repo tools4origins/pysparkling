@@ -1,23 +1,15 @@
-import sys
-
 from pysparkling.sql.expressions.expressions import Expression
-from pysparkling.sql.expressions.mappers import StarOperator, CaseWhen
-from pysparkling.sql.expressions.operators import Cast, Alias, IsNotNull, IsNull, IsIn, Substring, \
-    EndsWith, StartsWith, Contains, GetField, BitwiseXor, BitwiseAnd, BitwiseOr, EqNullSafe, \
-    GreaterThan, GreaterThanOrEqual, LessThanOrEqual, LessThan, Equal, Negate, Divide, Add, Minus, \
-    Time, Mod, Pow, And, Or, Invert
-from pysparkling.sql.expressions.orders import Asc, AscNullsFirst, AscNullsLast, Desc, \
-    DescNullsFirst, DescNullsLast, SortOrder
-
-from pysparkling.sql.types import DataType, StructField, string_to_type
-
 from pysparkling.sql.expressions.fields import find_position_in_schema
 from pysparkling.sql.expressions.literals import Literal
+from pysparkling.sql.expressions.mappers import StarOperator, CaseWhen
+from pysparkling.sql.expressions.operators import Negate, Add, Minus, Time, Divide, Mod, Pow, \
+    Equal, LessThan, LessThanOrEqual, GreaterThanOrEqual, GreaterThan, EqNullSafe, And, Or, \
+    Invert, BitwiseOr, BitwiseAnd, BitwiseXor, GetField, Contains, IsNull, IsNotNull, StartsWith, \
+    EndsWith, Substring, IsIn, Alias, Cast
+from pysparkling.sql.expressions.orders import DescNullsLast, DescNullsFirst, Desc, \
+    AscNullsLast, AscNullsFirst, Asc, SortOrder
+from pysparkling.sql.types import string_to_type, DataType, StructField
 from pysparkling.sql.utils import IllegalArgumentException
-
-if sys.version >= '3':
-    basestring = str
-    long = int
 
 
 class Column(object):
@@ -35,7 +27,6 @@ class Column(object):
         df.colName + 1
         1 / df.colName
 
-    .. versionadded:: 1.3
     """
 
     def __init__(self, expr):
@@ -87,7 +78,7 @@ class Column(object):
     def __rpow__(self, power):
         return Column(Pow(parse_operator(power), self))
 
-    # logistic operators
+    # comparison operators
     def __eq__(self, other):
         return Column(Equal(self, parse_operator(other)))
 
@@ -106,11 +97,32 @@ class Column(object):
     def __gt__(self, other):
         return Column(GreaterThan(self, parse_operator(other)))
 
+    def between(self, lowerBound, upperBound):
+        """
+        A boolean expression that is evaluated to true if the value of this
+        expression is between the given columns.
+
+        # >>> from pysparkling import Context, Row
+        # >>> from pysparkling.sql.session import SparkSession
+        # >>> spark = SparkSession(Context())
+        # >>> df = spark.createDataFrame(
+        # ...   [Row(age=2, name='Alice'), Row(age=5, name='Bob')]
+        # ... )
+        # >>> df.select(df.name, df.age.between(2, 4)).show()
+        # +-----+---------------------------+
+        # | name|((age >= 2) AND (age <= 4))|
+        # +-----+---------------------------+
+        # |Alice|                       true|
+        # |  Bob|                      false|
+        # +-----+---------------------------+
+        """
+        return (self >= lowerBound) & (self <= upperBound)
+
     def eqNullSafe(self, other):
         return Column(EqNullSafe(self, parse_operator(other)))
 
     # `and`, `or`, `not` cannot be overloaded in Python,
-    # so use bitwise operators as boolean operators
+    # so bitwise operators are used as boolean operators
     def __and__(self, other):
         return Column(And(self, parse_operator(other)))
 
@@ -126,7 +138,6 @@ class Column(object):
     def __ror__(self, other):
         return Column(Or(parse_operator(other), self))
 
-    # container operators
     def __contains__(self, item):
         raise ValueError("Cannot apply 'in' operator against a column: please use 'contains' "
                          "in a string column or 'array_contains' function for an array column.")
@@ -209,11 +220,11 @@ class Column(object):
 
     # pylint: disable=W0511
     # todo: Like
-    # def rlike(self, other):
-    #     return Column(RegexLike(self, parse_operator(other)))
-    #
-    # def like(self, other):
-    #     return Column(Like(self, parse_operator(other)))
+    def rlike(self, other):
+        raise NotImplementedError("rlike is not yet implemented in pysparkling")
+
+    def like(self, other):
+        raise NotImplementedError("like is not yet implemented in pysparkling")
 
     def startswith(self, substr):
         return Column(StartsWith(self, parse_operator(substr)))
@@ -508,27 +519,6 @@ class Column(object):
     def astype(self, dataType):
         return self.cast(dataType)
 
-    def between(self, lowerBound, upperBound):
-        """
-        A boolean expression that is evaluated to true if the value of this
-        expression is between the given columns.
-
-        >>> from pysparkling import Context, Row
-        >>> from pysparkling.sql.session import SparkSession
-        >>> spark = SparkSession(Context())
-        >>> df = spark.createDataFrame(
-        ...   [Row(age=2, name='Alice'), Row(age=5, name='Bob')]
-        ... )
-        >>> df.select(df.name, df.age.between(2, 4)).show()
-        +-----+---------------------------+
-        | name|((age >= 2) AND (age <= 4))|
-        +-----+---------------------------+
-        |Alice|                       true|
-        |  Bob|                      false|
-        +-----+---------------------------+
-        """
-        return (self >= lowerBound) & (self <= upperBound)
-
     def when(self, condition, value):
         """
         Evaluates a list of conditions and returns one of multiple possible result expressions.
@@ -651,9 +641,6 @@ class Column(object):
             self.expr.recursive_merge_stats(row, schema)
         return self
 
-    def __str__(self):
-        return str(self.expr)
-
     def initialize(self, partition_index):
         if isinstance(self.expr, Expression):
             self.expr.recursive_initialize(partition_index)
@@ -672,33 +659,25 @@ class Column(object):
 
     # pylint: disable=W0511
     # todo: support of window functions
-    # def over(self, window):
-    #     """
-    #     Define a windowing column.
-    #
-    #     :param window: a :class:`WindowSpec`
-    #     :return: a Column
-    #
-    #     >>> from pyspark.sql import Window
-    #     >>> window = Window.partitionBy("name").orderBy("age").rowsBetween(-1, 1)
-    #     >>> from pysparkling.sql.functions import rank, min
-    #     >>> # df.select(rank().over(window), min('age').over(window))
-    #     """
-    #     from pyspark.sql.window import WindowSpec
-    #     if not isinstance(window, WindowSpec):
-    #         raise TypeError("window should be WindowSpec")
-    #     jc = self._jc.over(window._jspec)
-    #     return Column(jc)
+    def over(self, window):
+        """
+        Define a windowing column.
+
+        :param window: a :class:`WindowSpec`
+        :return: a Column
+
+        # >>> from pyspark.sql import Window
+        # >>> window = Window.partitionBy("name").orderBy("age").rowsBetween(-1, 1)
+        # >>> from pysparkling.sql.functions import rank, min
+        # >>> # df.select(rank().over(window), min('age').over(window))
+        """
+        raise NotImplementedError("window functions are not yet supported by pysparkling")
 
     def __nonzero__(self):
         raise ValueError("Cannot convert column into bool: please use '&' for 'and', '|' for 'or', "
                          "'~' for 'not' when building DataFrame boolean expressions.")
 
     __bool__ = __nonzero__
-
-    @property
-    def col_name(self):
-        return str(self)
 
     @property
     def data_type(self):
@@ -709,6 +688,13 @@ class Column(object):
     @property
     def is_nullable(self):
         return True
+
+    def __str__(self):
+        return str(self.expr)
+
+    @property
+    def col_name(self):
+        return str(self)
 
     def __repr__(self):
         return "Column<{0!r}>".format(self.expr)

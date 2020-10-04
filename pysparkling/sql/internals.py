@@ -1,7 +1,6 @@
 import itertools
 import json
 import math
-import sys
 import warnings
 from collections import Counter
 from copy import deepcopy
@@ -23,25 +22,6 @@ from pysparkling.stat_counter import RowStatHelper, CovarianceCounter
 from pysparkling.utils import reservoir_sample_and_size, compute_weighted_percentiles, \
     get_keyfunc, str_half_width, pad_cell, merge_rows_joined_on_values, \
     format_cell, portable_hash, merge_rows
-
-if sys.version >= '3':
-    basestring = str
-
-GROUP_BY_TYPE = "GROUP_BY_TYPE"
-ROLLUP_TYPE = "ROLLUP_TYPE"
-CUBE_TYPE = "CUBE_TYPE"
-
-
-class SubTotalValue:
-    """
-    Some grouping type (rollup and cube) compute subtotals on all statistics,
-    This class once instantiated creates a unique value that identify such subtotals
-    """
-    def __repr__(self):
-        return "SubTotal"
-
-
-GROUPED = SubTotalValue()
 
 
 class FieldIdGenerator(object):
@@ -461,7 +441,7 @@ class DataFrameInternal(object):
                 (field.name, value) for field, value in zip(self.bound_schema.fields, row)
             ])
 
-        # This behavior (keeping the column of self) is the same as in PySpark
+        # This behavior (keeping the columns of self) is the same as in PySpark
         return self._with_rdd(
             self._rdd.union(other.rdd().map(change_col_names)),
             self.bound_schema
@@ -499,7 +479,7 @@ class DataFrameInternal(object):
                 (field.name, row[field.name]) for field in self.bound_schema.fields
             ])
 
-        # This behavior (keeping the column of self) is the same as in PySpark
+        # This behavior (keeping the columns of self) is the same as in PySpark
         return self._with_rdd(
             self._rdd.union(other.rdd().map(change_col_order)),
             self.bound_schema
@@ -964,24 +944,33 @@ class DataFrameInternal(object):
         )
 
     def freqItems(self, cols, support):
-        pass
+        raise NotImplementedError("pysparkling does not support yet freqItems")
 
     def dropna(self, thresh, subset):
-        pass
+        raise NotImplementedError("pysparkling does not support yet dropna")
 
     def fillna(self, value, subset):
-        pass
+        raise NotImplementedError("pysparkling does not support yet fillna")
 
     def replace(self, to_replace, value, subset=None):
-        pass
+        raise NotImplementedError("pysparkling does not support yet replace")
 
 
-def get_pivoted_stats(stats, pivot_value):
-    if pivot_value is None:
-        return stats
-    if len(stats) == 1:
-        return [stats[0].alias(pivot_value)]
-    return [stat.alias("{0}_{1}".format(pivot_value, stat)) for stat in stats]
+GROUP_BY_TYPE = "GROUP_BY_TYPE"
+ROLLUP_TYPE = "ROLLUP_TYPE"
+CUBE_TYPE = "CUBE_TYPE"
+
+
+class SubTotalValue:
+    """
+    Some grouping type (rollup and cube) compute subtotals on all statistics,
+    This class once instantiated creates a unique value that identify such subtotals
+    """
+    def __repr__(self):
+        return "SubTotal"
+
+
+GROUPED = SubTotalValue()
 
 
 class InternalGroupedDataFrame(object):
@@ -1199,3 +1188,11 @@ class GroupedStats(object):
                         stat.mergeStats(other_stat, schema)
 
         return self
+
+
+def get_pivoted_stats(stats, pivot_value):
+    if pivot_value is None:
+        return stats
+    if len(stats) == 1:
+        return [stats[0].alias(pivot_value)]
+    return [stat.alias("{0}_{1}".format(pivot_value, stat)) for stat in stats]

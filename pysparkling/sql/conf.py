@@ -1,8 +1,3 @@
-import sys
-
-if sys.version_info[0] >= 3:
-    basestring = str
-
 _sentinel = object()
 
 
@@ -25,10 +20,9 @@ class RuntimeConfig(object):
         del self._conf[key]
 
     def _checkType(self, obj, identifier):
-        if not isinstance(obj, basestring):
+        if not isinstance(obj, str):
             raise TypeError("expected %s '%s' to be a string (was '%s')" %
                             (identifier, obj, type(obj).__name__))
 
     def isModifiable(self, key):
         raise NotImplementedError("pysparkling does not support yet this feature")
-        # return self._conf.isModifiable(key)

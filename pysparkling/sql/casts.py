@@ -245,9 +245,13 @@ def _cast_to_bounded_type(name, min_value, max_value, value, from_type, options)
     if isinstance(from_type, DateType):
         return None
     if isinstance(from_type, TimestampType):
-        timestamp_as_float = cast_to_float(value, from_type, options=options)
         return _cast_to_bounded_type(
-            name, min_value, max_value, timestamp_as_float, FloatType(), options=options
+            name,
+            min_value,
+            max_value,
+            cast_to_float(value, from_type, options=options),
+            FloatType(),
+            options=options
         )
     if isinstance(from_type, StringType):
         casted_value = int(value)
