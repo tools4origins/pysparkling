@@ -23,20 +23,19 @@ setup(
     long_description=open('README.rst').read(),
     author='pysparkling contributors',
     url='https://github.com/svenkreiss/pysparkling',
-
     install_requires=[
         'boto>=2.36.0',
         'future>=0.15',
         'requests>=2.6.0',
         'pytz>=2019.3',
-        'python-dateutil>=2.8.0'
+        'python-dateutil>=2.8.0',
+        'pythonsqlparser==0.1.0',
     ],
     extras_require={
         'hdfs': ['hdfs>=2.0.0'],
         'pandas': ['pandas>=0.23.2'],
         'performance': ['matplotlib>=1.5.3'],
         'streaming': ['tornado>=4.3'],
-        'dev': ['antlr4-python3-runtime==4.7.1'],
         'test': [
             'backports.tempfile==1.0rc1',
             'cloudpickle>=0.1.0',
