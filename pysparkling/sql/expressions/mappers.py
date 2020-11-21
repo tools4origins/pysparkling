@@ -6,6 +6,7 @@ import string
 
 from pysparkling.sql.expressions.expressions import Expression, NullSafeColumnOperation, \
     UnaryExpression
+from pysparkling.sql.expressions.operators import Cast
 from pysparkling.sql.internal_utils.column import resolve_column
 from pysparkling.sql.types import create_row, StringType
 from pysparkling.sql.utils import AnalysisException
@@ -829,7 +830,7 @@ class Conv(Expression):
         self.to_base = to_base.get_literal_value()
 
     def eval(self, row, schema):
-        value = self.column.cast(StringType()).eval(row, schema)
+        value = Cast(self.column, StringType()).eval(row, schema)
         return self.convert(
             value,
             self.from_base,
