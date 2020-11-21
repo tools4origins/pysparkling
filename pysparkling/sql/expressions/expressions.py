@@ -6,16 +6,16 @@ from pysparkling.sql.utils import AnalysisException
 expression_registry = {}
 
 
-class RegisterExpressions(type):
+class RegisteredExpressions(type):
     pretty_name = None
 
     def __init__(cls, what, bases, dct):
-        super(RegisterExpressions, cls).__init__(what, bases, dct)
+        super(RegisteredExpressions, cls).__init__(what, bases, dct)
         if cls.pretty_name is not None:
-            expression_registry[cls.pretty_name] = cls
+            expression_registry[cls.pretty_name.lower()] = cls
 
 
-class Expression(object, metaclass=RegisterExpressions):
+class Expression(object, metaclass=RegisteredExpressions):
     pretty_name = None
 
     def __init__(self, *children):
