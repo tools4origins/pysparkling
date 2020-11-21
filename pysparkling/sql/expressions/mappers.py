@@ -246,7 +246,7 @@ class SubstringIndex(Expression):
 class Coalesce(Expression):
     pretty_name = "coalesce"
 
-    def __init__(self, columns):
+    def __init__(self, *columns):
         super(Coalesce, self).__init__(columns)
         self.columns = columns
 
@@ -578,7 +578,7 @@ class SparkPartitionID(Expression):
 class CreateStruct(Expression):
     pretty_name = "struct"
 
-    def __init__(self, columns):
+    def __init__(self, *columns):
         super(CreateStruct, self).__init__(columns)
         self.columns = columns
 
@@ -659,7 +659,7 @@ class ShiftRightUnsigned(Expression):
 class Greatest(Expression):
     pretty_name = "greatest"
 
-    def __init__(self, columns):
+    def __init__(self, *columns):
         super(Greatest, self).__init__(columns)
         self.columns = columns
 
@@ -674,7 +674,7 @@ class Greatest(Expression):
 class Least(Expression):
     pretty_name = "least"
 
-    def __init__(self, columns):
+    def __init__(self, *columns):
         super(Least, self).__init__(columns)
         self.columns = columns
 
@@ -710,7 +710,7 @@ class Upper(UnaryExpression):
 class Concat(Expression):
     pretty_name = "concat"
 
-    def __init__(self, columns):
+    def __init__(self, *columns):
         super(Concat, self).__init__(columns)
         self.columns = columns
 
@@ -724,7 +724,7 @@ class Concat(Expression):
 class ConcatWs(Expression):
     pretty_name = "concat_ws"
 
-    def __init__(self, sep, columns):
+    def __init__(self, sep, *columns):
         super(ConcatWs, self).__init__(columns)
         self.sep = sep.get_literal_value()
         self.columns = columns
@@ -734,7 +734,7 @@ class ConcatWs(Expression):
 
     def args(self):
         if self.columns:
-            return [self.sep] + self.columns
+            return [self.sep] + list(self.columns)
         return [self.sep]
 
 
@@ -776,7 +776,7 @@ class MapFromEntries(UnaryExpression):
 class MapConcat(Expression):
     pretty_name = "map_concat"
 
-    def __init__(self, columns):
+    def __init__(self, *columns):
         super(MapConcat, self).__init__(*columns)
         self.columns = columns
 
@@ -993,7 +993,7 @@ class UnBase64(UnaryExpression):
 class GroupingID(Expression):
     pretty_name = "grouping_id"
 
-    def __init__(self, columns):
+    def __init__(self, *columns):
         super(GroupingID, self).__init__(*columns)
         self.columns = columns
 

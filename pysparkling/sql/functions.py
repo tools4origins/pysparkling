@@ -351,8 +351,8 @@ def struct(*exprs):
     """
     if len(exprs) == 1 and isinstance(exprs[0], list):
         exprs = exprs[0]
-    cols = [parse(e) for e in exprs]
-    return col(CreateStruct(cols))
+    columns = [parse(e) for e in exprs]
+    return col(CreateStruct(*columns))
 
 
 def array(*exprs):
@@ -360,7 +360,7 @@ def array(*exprs):
     :rtype: Column
     """
     columns = [parse(e) for e in exprs]
-    return col(ArrayColumn(columns))
+    return col(ArrayColumn(*columns))
 
 
 def map_from_arrays(col1, col2):
@@ -408,7 +408,7 @@ def countDistinct(*exprs):
     :rtype: Column
     """
     columns = [parse(e) for e in exprs]
-    return col(CountDistinct(columns=columns))
+    return col(CountDistinct(*columns))
 
 
 def collect_set(e):
@@ -528,8 +528,8 @@ def grouping_id(*exprs):
 
     :rtype: Column
     """
-    cols = [parse(e) for e in exprs]
-    return col(GroupingID(cols))
+    columns = [parse(e) for e in exprs]
+    return col(GroupingID(*columns))
 
 
 def kurtosis(e):
@@ -721,9 +721,9 @@ def create_map(*exprs):
     """
     if len(exprs) == 1 and isinstance(exprs[0], (list, set)):
         exprs = exprs[0]
-    cols = [parse(e) for e in exprs]
+    columns = [parse(e) for e in exprs]
 
-    return col(MapColumn(cols))
+    return col(MapColumn(*columns))
 
 
 def broadcast(df):
@@ -739,7 +739,7 @@ def coalesce(*exprs):
     :rtype: Column
     """
     columns = [parse(e) for e in exprs]
-    return col(Coalesce(columns))
+    return col(Coalesce(*columns))
 
 
 def input_file_name():
@@ -941,8 +941,8 @@ def greatest(*exprs):
     """
     :rtype: Column
     """
-    cols = [parse(e) for e in exprs]
-    return col(Greatest(cols))
+    columns = [parse(e) for e in exprs]
+    return col(Greatest(*columns))
 
 
 # noinspection PyShadowingBuiltins
@@ -974,8 +974,8 @@ def least(*exprs):
     """
     :rtype: Column
     """
-    cols = [parse(e) for e in exprs]
-    return col(Least(cols))
+    columns = [parse(e) for e in exprs]
+    return col(Least(*columns))
 
 
 def log(arg1, arg2=None):
@@ -1283,8 +1283,8 @@ def concat_ws(sep, *exprs):
     +--------------+
 
     """
-    cols = [parse(e) for e in exprs]
-    return col(ConcatWs(lit(sep), cols))
+    columns = [parse(e) for e in exprs]
+    return col(ConcatWs(lit(sep), *columns))
 
 
 def decode(value, charset):
@@ -2172,8 +2172,8 @@ def concat(*exprs):
     """
     :rtype: Column
     """
-    cols = [parse(e) for e in exprs]
-    return col(Concat(cols))
+    columns = [parse(e) for e in exprs]
+    return col(Concat(*columns))
 
 
 def array_position(column, value):
@@ -2427,7 +2427,8 @@ def arrays_zip(*exprs):
     """
     :rtype: Column
     """
-    return col(ArraysZip([parse(e) for e in exprs]))
+    columns = [parse(e) for e in exprs]
+    return col(ArraysZip(*columns))
 
 
 def map_concat(*exprs):
@@ -2448,8 +2449,8 @@ def map_concat(*exprs):
     [Row(map_concat(m1, m2)={1: 'a', 2: 'c', 3: 'd'})]
 
     """
-    cols = [parse(e) for e in exprs]
-    return col(MapConcat(cols))
+    columns = [parse(e) for e in exprs]
+    return col(MapConcat(*columns))
 
 
 def from_csv(e, schema, options=None):
@@ -2535,7 +2536,7 @@ def pandas_udf(f=None, returnType=None, functionType=None):
     raise NotImplementedError("Pysparkling does not support yet this function")
 
 
-def callUDF(udfName, *cols):
+def callUDF(udfName, *columns):
     raise NotImplementedError("Pysparkling does not support yet this function")
 
 
